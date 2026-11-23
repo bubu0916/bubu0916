@@ -4,12 +4,76 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>家用記帳小工具</title>
-<meta http-equiv="refresh" content="0; url=預算規劃.html">
-<script>location.replace('預算規劃.html' + location.hash);</script>
-<style>body{margin:0;padding:40px 16px;background:#F7F5EF;color:#293831;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;text-align:center;line-height:1.6}a{color:#385749;font-weight:700}</style>
+<script>
+/* 已經輸入過密碼：直接進預算規劃 */
+(function () { var H = 'fd15cf42a6710c7d645f90dcdcc5aabfb7a881b99387d989d54045b0932c95ed', ok = false;
+  try { ok = localStorage.getItem('site-gate-v1') === H; } catch (e) {} if (!ok) { try { ok = sessionStorage.getItem('site-gate-v1') === H; } catch (e) {} }
+  if (ok) location.replace('預算規劃.html'); })();
+</script>
+<style>
+  body{margin:0;background:#F7F5EF;color:#293831;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-size:16px;line-height:1.6}
+  .hero{background:#234838;color:#fff;text-align:center;padding:30px max(16px,env(safe-area-inset-left,0px)) 26px}
+  .hero h1{margin:0 0 6px;font-size:1.5rem}
+  .hero p{margin:0;color:#dbe7de}
+  main{display:flex;justify-content:center;padding:28px max(16px,env(safe-area-inset-left,0px)) 40px}
+  .gbox{width:100%;max-width:380px;background:#FFFEFA;border:1px solid #D3DDD3;border-radius:16px;padding:24px 20px;text-align:center;box-sizing:border-box}
+  .gbox h2{margin:0 0 6px;font-size:1.2rem}
+  .gbox p{margin:0 0 16px;color:#5f6f66;font-size:.95rem}
+  .warn{margin:0 0 16px;padding:10px 12px;border-radius:10px;background:#E8EEE5;color:#293831;font-size:.92rem;text-align:left}
+  input{width:100%;box-sizing:border-box;min-height:48px;padding:10px 12px;border:1px solid #D3DDD3;border-radius:10px;background:#fff;color:#293831;font:inherit;font-size:1.3rem;letter-spacing:.3em;text-align:center}
+  button{width:100%;margin-top:12px;min-height:48px;border:0;border-radius:10px;background:#385749;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+  input:focus-visible,button:focus-visible{outline:2px solid #385749;outline-offset:2px}
+  .gerr{min-height:1.4em;margin:10px 0 0 !important;color:#b3261e !important;font-size:.92rem !important}
+  .credit{text-align:center;color:#5f6f66;font-size:.85rem;margin:0 0 24px}
+</style>
 </head>
 <body>
-<p>正在打開記帳小工具……</p>
-<p>如果沒有自動跳轉，請點 <a href="預算規劃.html">預算規劃</a>。</p>
+<header class="hero"><h1>🧾 家用記帳小工具</h1><p>一眼看懂這個月錢去哪了🌿</p></header>
+<noscript><p style="margin:0;padding:12px 16px;background:#FFF4E5;color:#8a5a00;text-align:center;font-size:.95rem;line-height:1.6">這個預覽沒有執行網頁程式，所以無法輸入密碼。請改用 Safari 或 Chrome 開啟。</p></noscript>
+<main>
+  <form class="gbox" id="gateForm" novalidate>
+    <h2>🔒 請輸入密碼</h2>
+    <p>這是鯊鯊說心事的家用記帳小工具，請輸入購買時拿到的 6 位數密碼。</p>
+    <p class="warn">請不要轉傳密碼或網址，這是我一點一點做出來的付費工具，謝謝你的支持 🌿</p>
+    <input id="gateIn" type="password" inputmode="numeric" autocomplete="off" maxlength="6" aria-label="6 位數密碼" placeholder="••••••">
+    <button type="submit">進入</button>
+    <p class="gerr" id="gateErr" role="alert"></p>
+  </form>
+</main>
+<p class="credit">© 2026 鯊鯊說心事｜IG：鯊鯊說心事</p>
+<script>
+(function () {
+  var GATE_HASH = 'fd15cf42a6710c7d645f90dcdcc5aabfb7a881b99387d989d54045b0932c95ed', GATE_KEY = 'site-gate-v1', SALT = 'shark-household:';
+  function sha256(ascii) {                              // 小型 SHA-256（只用來把密碼打亂，不讓原始碼直接看到數字）
+    function rr(v, a) { return (v >>> a) | (v << (32 - a)); }
+    var mp = Math.pow, mw = mp(2, 32), i, j, res = '', words = [], blen = ascii.length * 8, hash = [], k = [], pc = 0, ic = {};
+    for (var c = 2; pc < 64; c++) { if (!ic[c]) { for (i = 0; i < 313; i += c) ic[i] = c; hash[pc] = (mp(c, .5) * mw) | 0; k[pc++] = (mp(c, 1 / 3) * mw) | 0; } }
+    hash = hash.slice(0, 8); ascii += '\x80'; while (ascii.length % 64 - 56) ascii += '\x00';
+    for (i = 0; i < ascii.length; i++) { j = ascii.charCodeAt(i); words[i >> 2] |= j << ((3 - i) % 4) * 8; }
+    words[words.length] = ((blen / mw) | 0); words[words.length] = blen;
+    for (j = 0; j < words.length;) {
+      var w = words.slice(j, j += 16), oh = hash; hash = hash.slice(0, 8);
+      for (i = 0; i < 64; i++) {
+        var w15 = w[i - 15], w2 = w[i - 2], a = hash[0], e = hash[4];
+        var t1 = hash[7] + (rr(e, 6) ^ rr(e, 11) ^ rr(e, 25)) + ((e & hash[5]) ^ ((~e) & hash[6])) + k[i] + (w[i] = (i < 16) ? w[i] : (w[i - 16] + (rr(w15, 7) ^ rr(w15, 18) ^ (w15 >>> 3)) + w[i - 7] + (rr(w2, 17) ^ rr(w2, 19) ^ (w2 >>> 10))) | 0);
+        var t2 = (rr(a, 2) ^ rr(a, 13) ^ rr(a, 22)) + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+        hash = [(t1 + t2) | 0].concat(hash); hash[4] = (hash[4] + t1) | 0; hash.length = 8;
+      }
+      for (i = 0; i < 8; i++) hash[i] = (hash[i] + oh[i]) | 0;
+    }
+    for (i = 0; i < 8; i++) for (j = 3; j + 1; j--) { var b = (hash[i] >> (j * 8)) & 255; res += (b < 16 ? '0' : '') + b.toString(16); }
+    return res;
+  }
+  var inp = document.getElementById('gateIn'), err = document.getElementById('gateErr');
+  inp.addEventListener('input', function () { var v = inp.value.replace(/[０-９]/g, function (ch) { return String.fromCharCode(ch.charCodeAt(0) - 65248); }).replace(/\D/g, '').slice(0, 6); if (inp.value !== v) inp.value = v; err.textContent = ''; });
+  document.getElementById('gateForm').addEventListener('submit', function (ev) {
+    ev.preventDefault(); var v = inp.value;
+    if (v.length !== 6) { err.textContent = '請輸入 6 位數密碼。'; inp.focus(); return; }
+    if (sha256(SALT + v) !== GATE_HASH) { err.textContent = '密碼不對，請再試一次。'; inp.value = ''; inp.focus(); return; }
+    var ok = false; try { localStorage.setItem(GATE_KEY, GATE_HASH); ok = true; } catch (e) {} if (!ok) { try { sessionStorage.setItem(GATE_KEY, GATE_HASH); } catch (e) {} }
+    location.href = '預算規劃.html';
+  });
+})();
+</script>
 </body>
 </html>
