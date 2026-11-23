@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>生活預算</title>
+<style>
+  /* 版面：同「預算規劃」 */
+  :root {
+    --green: #385749; --ink: #293831; --bg: #F7F5EF; --card: #FFFEFA; --line: #D3DDD3;
+    --tint: #E8EEE5; --muted: #5f6f66; --warn: #b3261e; --amber: #8a5a00;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; font-size: 16px; line-height: 1.6; }
+  .hero { background: #234838; color: #fff; padding-block: 30px 26px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .hero-in { max-width: 960px; margin: 0 auto; }
+  .hero-in { text-align: center; }
+  .hero h1 { margin: 0 0 6px; font-size: 1.6rem; text-wrap: balance; }
+  .hero p { margin: 0; color: #dbe7de; text-wrap: balance; }
+  .wrap { max-width: 960px; margin: 0 auto; padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+  .card.tint { background: var(--tint); border-color: transparent; }
+  .label { font-size: .92rem; color: var(--muted); }
+  .value { font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.3; overflow-wrap: anywhere; }
+  .value.neg { color: var(--warn); }
+  .sub { font-size: .85rem; color: var(--muted); }
+  button, input, select { font: inherit; }
+  input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); min-height: 44px; }
+  input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .btn { padding: 10px 16px; border-radius: 10px; border: 1px solid var(--green); background: var(--green); color: #fff; font-weight: 600; cursor: pointer; min-height: 44px; }
+  .btn.ghost { background: #fff; color: var(--green); border-color: var(--line); }
+  .btn.danger { background: #fff; color: var(--warn); border-color: #e3c3c0; }
+  .btn.small { white-space: nowrap; flex: none; padding: 6px 12px; min-height: 36px; font-size: .92rem; }
+  .btn:disabled { opacity: .55; cursor: default; }
+
+  .monthbar { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 14px; }
+  .monthbar .m { min-width: 9.5em; text-align: center; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .monthbar .btn { padding: 8px 14px; }
+
+  .income-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-bottom: 12px; }
+  .income-row.has-total { grid-template-columns: minmax(0, 5fr) minmax(0, 2fr); }
+  .merged-card { padding: 0; overflow: hidden; }
+  .src-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; background: var(--tint); }
+  .src-head { flex-wrap: wrap; }
+  .src-btns { display: flex; gap: 8px; }
+  .src-head .label { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+  .src-list { display: grid; gap: 8px; margin-bottom: 8px; }
+  .src-item { display: flex; gap: 8px; align-items: center; }
+  .src-item input { flex: 1 1 auto; min-width: 0; }
+  .slots { display: flex; flex-wrap: wrap; gap: 10px; padding: 12px 14px 14px; }
+  .slot { border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: var(--card); min-width: 0; flex: 1 1 140px; }
+  .slot:focus-within { border-color: var(--green); }
+  .slot select { min-height: 36px; padding: 4px 8px; border: 0; border-radius: 999px; background: var(--tint); color: var(--green); font-weight: 600; font-size: .95rem; }
+  .slot .amt { display: flex; align-items: baseline; gap: 4px; }
+  .slot .amt span { font-weight: 700; color: var(--muted); }
+  .slot .amt input { min-height: 36px; padding: 4px 0; border: 0; border-radius: 0; background: transparent; outline: none; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 0; }
+  .plans-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; }
+  .plans-head .label { font-weight: 700; color: var(--ink); font-size: 1.05rem; }
+  .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .plan { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; cursor: pointer; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .plan:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .plan[aria-checked="true"] { background: var(--tint); border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+  .plan .ratio { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .plan .cust { display: flex; align-items: center; gap: 4px; }
+  .plan .cust input { min-height: 36px; padding: 4px 2px; text-align: center; font-weight: 700; font-size: 1.05rem; min-width: 0; border-radius: 8px; }
+  .plan .pct { font-size: .85rem; color: var(--muted); }
+  .plan .row { display: flex; justify-content: space-between; gap: 6px; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .plan .row span:first-child { color: var(--muted); }
+  .buckets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 12px 0 6px; }
+  .bucket { padding: 12px 14px; }
+  .bk-name { font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .bk-name::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+  .bk-link { font: inherit; font-weight: 700; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 4px; }
+  .bk-link::after { content: " ↓"; font-weight: 400; color: var(--muted); }
+  .bk-link:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 4px; }
+  @keyframes flashCard { from { box-shadow: 0 0 0 3px var(--green); } to { box-shadow: 0 0 0 3px transparent; } }
+  .flash { animation: flashCard 1.4s ease-out; }
+  @media (prefers-reduced-motion: reduce) { .flash { animation: none; box-shadow: 0 0 0 3px var(--green); } }
+  .bk-val { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 4px; overflow-wrap: anywhere; }
+  .bk-val small { font-size: .85rem; font-weight: 400; color: var(--muted); }
+  .bk-bar { height: 8px; border-radius: 999px; background: var(--tint); overflow: hidden; margin: 8px 0 6px; }
+  .bk-bar i { display: block; height: 100%; width: 0; background: var(--c); border-radius: 999px; }
+  .bucket.over .bk-bar i { background: var(--warn); }
+  .bucket.over .bk-sub { color: var(--warn); }
+  .bk-sub { font-size: .88rem; color: var(--muted); }
+  .bk-note { margin: 0 0 14px; font-size: .85rem; color: var(--muted); }
+  .slots.rows { flex-direction: column; flex-wrap: nowrap; gap: 0; padding: 4px 14px 0; }
+  .rows .slot { flex: none; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; padding: 10px 0; }
+  .rows .slot select { flex: 0 1 46%; min-width: 0; }
+  .rows .slot .amt { flex: 1 1 auto; justify-content: flex-end; min-width: 0; }
+  .rows .slot .amt span { margin-left: auto; }
+  .rows .slot .amt input { text-align: right; flex: 0 1 8.5em; width: 8.5em; min-width: 0; }
+  .extra-wrap { padding: 8px 14px 0; display: flex; flex-direction: column; gap: 8px; }
+  .extra-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .extra-row .ex-name { flex: 1 1 40%; min-width: 0; min-height: 36px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--ink); font-size: .95rem; }
+  .extra-row .amt { flex: 1 1 40%; min-width: 0; display: flex; align-items: baseline; gap: 4px; justify-content: flex-end; }
+  .extra-row .amt span { font-weight: 700; color: var(--muted); }
+  .extra-row .ex-amt { flex: 1 1 auto; width: 100%; min-width: 0; min-height: 36px; padding: 4px 0; border: 0; background: transparent; outline: none; text-align: right; font-size: 1.1rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ex-del { flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--tint); color: var(--muted); font-size: 1.1rem; cursor: pointer; }
+  .extra-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ex-del { display: none; }
+  .extra-wrap.editing .ex-del { display: inline-block; }
+  #editExtra[aria-pressed="true"] { background: var(--green); color: #fff; border-color: var(--green); }
+  .rows-total { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 14px 14px; font-variant-numeric: tabular-nums; }
+  .rows-total strong { font-size: 1.3rem; }
+  #needPanel .pair, #invPanel .pair, #savPanel .pair { margin-bottom: 0; }
+  .grp-note { margin: 0; padding: 0 14px 14px; text-align: center; color: var(--muted); font-size: .85rem; line-height: 1.5; }
+  .pair .src-head { justify-content: center; }
+  .pair .src-head .label { text-align: center; }
+  .pair .extra-row .ex-name { text-align: center; }
+  .pair .extra-btns { justify-content: center; }
+  .pair .rows-total { justify-content: center; gap: 14px; }
+  #needPanel .panel-head, #invPanel .panel-head, #savPanel .panel-head { justify-content: flex-start; }
+  #needPanel .collapse-btn, #invPanel .collapse-btn, #savPanel .collapse-btn { justify-content: flex-start; }
+  #planPanel .alloc { margin-bottom: 0; }
+  #planPanel .plans { margin-bottom: 12px; }
+  #planPanel .note-s { margin: 0 0 10px; }
+  .alloc-title { font-weight: 700; margin-bottom: 8px; }
+  .alloc-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--tint); gap: 2px; }
+  .alloc-bar i { display: block; height: 100%; min-width: 0; }
+  .alloc-bar i:nth-child(1) { background: #234838; }
+  .alloc-bar i:nth-child(2) { background: #6f8f7c; }
+  .alloc-bar i:nth-child(3) { background: #b9cdbd; }
+  .alloc-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+  .alloc-item .n { font-size: .9rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .alloc-item .n::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+  .alloc-item .v { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .alloc-item .p { font-size: .85rem; color: var(--muted); }
+  .pair { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; align-items: start; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .stat { padding: 12px 14px; }
+  .stat .value { font-size: 1.3rem; }
+  .grid2.one { grid-template-columns: minmax(0, 1fr); }
+  .total-card { background: #234838; border-color: #234838; color: #fff; display: flex; flex-direction: column; justify-content: center; }
+  .total-card .label { color: #dbe7de; }
+  .big-total { margin-top: 10px; text-align: center; align-items: center; padding: 8px 14px; }
+  .big-total .label { font-size: .8rem; }
+  .big-total .value { font-size: 1.3rem; }
+  .big-total .bt-sub { display: none; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+
+  .progress-wrap { margin: 2px 0 12px; }
+  .progress-label { display: flex; justify-content: space-between; gap: 10px; font-size: .92rem; color: var(--muted); margin-bottom: 6px; flex-wrap: wrap; }
+  .progress { height: 12px; border-radius: 999px; background: var(--tint); overflow: hidden; }
+  .progress-fill { height: 100%; width: 0; background: var(--green); border-radius: 999px; }
+  .progress-fill.over { background: var(--warn); }
+
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 14px; overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 12px 16px; background: var(--tint); }
+  .panel-head h2 { margin: 0; font-size: 1.1rem; }
+  .panel-body { padding: 14px 16px; }
+  .collapse-btn { display: inline-flex; align-items: center; gap: 8px; background: none; border: 0; padding: 0; color: var(--ink); cursor: pointer; text-align: left; }
+  .collapse-btn .tog { font-size: .9rem; color: var(--muted); }
+  .panel.collapsed .panel-body { display: none; }
+  .head-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .head-tools select { width: auto; min-width: 8em; }
+
+  .cats { display: grid; gap: 12px; }
+  .cat-row .top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  .cat-row .amt { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .cat-bar { height: 10px; background: var(--tint); border-radius: 999px; overflow: hidden; }
+  .cat-bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
+  .empty { text-align: center; color: var(--muted); padding: 22px 12px; }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: var(--tint); font-weight: 600; font-size: .92rem; padding: 10px 12px; text-align: center; }
+  td { padding: 10px 12px; border-top: 1px solid var(--line); text-align: center; vertical-align: middle; }
+  td.note { text-align: left; overflow-wrap: anywhere; }
+  td.num, th.num { font-variant-numeric: tabular-nums; }
+  .tag { display: inline-block; padding: 1px 10px; border-radius: 999px; background: var(--tint); color: var(--green); font-size: .85rem; font-weight: 600; }
+  .actions { display: flex; gap: 6px; justify-content: center; }
+  .credit { margin: 22px 0 0; text-align: center; font-size: .85rem; color: var(--muted); }
+  .formula { margin: 0 0 12px; color: var(--muted); }
+  .note-s { margin: 0 0 12px; color: var(--muted); font-size: .92rem; }
+
+  dialog { border: 0; border-radius: 16px; padding: 0; width: min(440px, calc(100vw - 32px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; color: var(--ink); background: var(--card); position: fixed; inset: 0; margin: auto; z-index: 1000; }
+  dialog::backdrop { background: rgba(35, 56, 46, .45); }
+  dialog.dlg-fallback { box-shadow: 0 0 0 100vmax rgba(35, 56, 46, .45); }
+  dialog:not([open]) { display: none; }
+  .dlg-body { padding: 18px 18px 6px; }
+  .dlg-body h3 { margin: 0 0 8px; font-size: 1.15rem; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-weight: 600; margin-bottom: 4px; font-size: .95rem; }
+  .err { color: var(--warn); min-height: 1.3em; margin: 0 0 8px; }
+  .undo-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0 8px; padding: 6px 10px; border-radius: 10px; background: var(--tint); font-size: .9rem; }
+  .undo-bar[hidden] { display: none; }
+  .undo-bar span { min-width: 0; overflow-wrap: anywhere; }
+  @media (max-width: 899px) { .pair .undo-bar { flex-direction: column; align-items: stretch; text-align: center; gap: 4px; padding: 6px; font-size: .78rem; } .pair .undo-bar .btn { width: 100%; min-height: 32px; padding: 2px 4px; font-size: .78rem; } }
+  .dlg-act { display: flex; gap: 10px; justify-content: flex-end; padding: 12px 18px 16px; position: sticky; bottom: 0; background: var(--card); border-top: 1px solid var(--line); }
+  textarea { width: 100%; min-height: 140px; font: .82rem/1.4 ui-monospace, Menlo, Consolas, monospace; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
+
+  @media (max-width: 899px) {
+    #needPanel .panel-body, #invPanel .panel-body, #savPanel .panel-body { padding: 8px; }
+    .pair { gap: 6px; }
+    .pair .src-head { flex-direction: column; align-items: stretch; gap: 6px; padding: 8px; }
+    .pair .src-head .label { font-size: .95rem; text-align: center; }
+    .pair .src-btns { flex-direction: column; gap: 4px; }
+    .pair .src-btns .btn { width: 100%; min-height: 32px; padding: 2px 4px; font-size: .78rem; }
+    .pair .slots.rows { padding: 2px 8px 0; }
+    .pair .rows .slot { flex-direction: column; align-items: stretch; gap: 2px; padding: 8px 0; }
+    .pair .rows .slot select { flex: none; width: 100%; font-size: .78rem; padding: 2px 2px 2px 6px; }
+    .pair .rows .slot .amt { justify-content: flex-end; }
+    .pair .rows .slot .amt span { margin-left: 0; }
+    .pair .rows .slot .amt input { flex: 1 1 auto; width: 100%; font-size: .9rem; }
+    .pair .extra-wrap { padding: 2px 8px 0; }
+    .pair .extra-row { flex-wrap: wrap; gap: 2px; padding: 8px 0; }
+    .pair .extra-row .ex-name { flex: 1 1 100%; font-size: .8rem; padding: 2px 6px; min-height: 32px; }
+    .pair .extra-row .amt { flex: 1 1 0; }
+    .pair .extra-row .ex-amt { font-size: .9rem; }
+    .pair .ex-del { width: 24px; height: 24px; font-size: .9rem; }
+    .pair .extra-btns { flex-direction: column; gap: 4px; }
+    .pair .extra-btns .btn { width: 100%; min-height: 32px; padding: 2px 4px; font-size: .78rem; }
+    .grp-note { padding: 0 8px 10px; font-size: .75rem; }
+    .pair .rows-total { flex-direction: column; align-items: flex-end; gap: 0; padding: 8px; }
+    .pair .rows-total strong { font-size: 1rem; }
+  }
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 1.4rem; }
+    .grid2, .grid3, .income-row { gap: 10px; }
+    .income-row.has-total { grid-template-columns: minmax(0, 1fr); }
+    .buckets { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .alloc-list { gap: 6px; }
+    .alloc-item .v { font-size: 1rem; }
+    .stats, .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .stats > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .stat .value { font-size: 1.2rem; }
+    .grid3 { grid-template-columns: 1fr 1fr; }
+    .grid3 > :last-child { grid-column: 1 / -1; }
+    .value { font-size: 1.4rem; }
+    .slot { flex: 1 1 calc(50% - 5px); }
+    .head-tools { width: 100%; }
+    .head-tools select { flex: 1 1 120px; min-width: 0; }
+    .table-scroll { overflow: visible; }
+    table, tbody, tr, td { display: block; }
+    thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    tbody tr { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+    tbody tr:last-child { margin-bottom: 0; }
+    td { border: 0; padding: 5px 0; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; text-align: right; }
+    td::before { content: attr(data-label); flex: none; color: var(--muted); font-size: .9rem; text-align: left; }
+    td.note { text-align: right; }
+    td.act { display: block; margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+    td.act::before { content: none; }
+    td.act .actions .btn { flex: 1 1 auto; min-height: 40px; }
+    td.empty { display: block; text-align: center; }
+    td.empty::before { content: none; }
+    .dlg-act .btn { flex: 1 1 auto; }
+  }
+  .gp .pair { margin-bottom: 0; }
+  .gp .panel-head, .gp .collapse-btn { justify-content: flex-start; }
+  .plan-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: stretch; }
+  .plan-box .label { display: block; margin: 0; font-weight: 400; }
+  .plan-box strong { display: block; line-height: 1.5; }
+  .bud-val { display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: 700; line-height: 1.5; font-variant-numeric: tabular-nums; }
+  .bud-val span { flex: none; }
+  .bud-box input { width: 1ch; min-width: 1ch; min-height: 0; height: 1.5em; padding: 0; border: 0; border-radius: 0; background: transparent; text-align: left; font: inherit; line-height: inherit; color: var(--ink); outline: none; }
+  .bud-box.locked { background: var(--tint); }
+  .bud-box:focus-within { border-color: var(--green); }
+  .plan-box { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; min-width: 0; text-align: center; background: var(--card); }
+  .plan-box .label { font-size: .85rem; color: var(--muted); }
+  .plan-box strong { font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+  .plan-box.over strong, .plan-box.over .label { color: var(--warn); }
+  .plan-bar { height: 10px; border-radius: 999px; background: var(--tint); margin-top: 12px; overflow: hidden; }
+  .plan-bar i { display: block; height: 100%; width: 0; background: var(--green); border-radius: 999px; transition: width .4s ease; }
+  #planNote { margin: 12px 0 0; }
+  .plan-box strong.unset { font-size: 15px; color: var(--muted, #8a8a80); font-weight: 600; }
+  .plan-bar.over i { background: var(--warn); }
+  @media (max-width: 640px) { .plan-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .plan-grid .bud-box { grid-column: 1 / -1; } }
+  .head-link { margin-left: auto; font-size: .9rem; font-weight: 600; color: var(--green); text-decoration: none; padding: 6px 4px; white-space: nowrap; }
+  .head-link:hover { text-decoration: underline; }
+  .copy-row { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: -4px 0 14px; }
+  .copy-msg { font-size: .9rem; color: var(--muted); text-align: center; min-height: 1.4em; }
+  .grand { margin-bottom: 14px; }
+  @media (max-width: 899px) { .gp .panel-body { padding: 8px; } }
+  /* 網頁選單 */
+  .sitenav { background:#F7F5EF; border-bottom:1px solid #D3DDD3; }
+  .sitenav-in { max-width:520px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding-block:10px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); }
+  .sitenav a { flex:0 0 calc((100% - 24px) / 4); min-width:0; box-sizing:border-box; padding:6px 0; border-radius:999px; border:1px solid #D3DDD3; background:#FFFEFA; color:#385749; font-size:.8rem; font-weight:600; text-decoration:none; white-space:nowrap; line-height:1.5; text-align:center; }
+  @media (max-width:360px) { .sitenav-in { gap:6px; } .sitenav a { flex-basis:calc((100% - 18px) / 4); font-size:.72rem; } }
+  .sitenav a:hover { background:#E8EEE5; }
+  .sitenav a:focus-visible { outline:2px solid #385749; outline-offset:2px; }
+  .sitenav a[aria-current="page"] { background:#385749; border-color:#385749; color:#fff; }
+</style>
+</head>
+<body>
+<header class="hero"><div class="hero-in">
+  <h1>🏠 生活預算</h1>
+  <p>生活、家庭、休閒，每一筆日常花費都有數🌿</p>
+</div></header>
+<noscript><p style="margin:0;padding:12px 16px;background:#FFF4E5;color:#8a5a00;text-align:center;font-size:.95rem;line-height:1.6">這個預覽沒有執行網頁程式，所以日期、按鈕和資料都無法使用。請改用 Safari 或 Chrome 開啟檔案，或使用網路預覽連結。</p></noscript>
+<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">預算規劃</a><a href="生活預算.html" aria-current="page">生活預算</a><a href="日常花費.html">日常花費</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
+
+<main class="wrap">
+  <div class="monthbar">
+    <button class="btn ghost" type="button" id="prevM" aria-label="上個月">‹</button>
+    <div class="m" id="monthLabel" aria-live="polite"></div>
+    <button class="btn ghost" type="button" id="nextM" aria-label="下個月">›</button>
+  </div>
+  <div class="copy-row"><button type="button" class="btn ghost small" id="copyPrev">沿用上個月</button><span class="copy-msg" id="copyMsg" role="status" aria-live="polite"></span></div>
+
+  <p class="err" id="saveNote" role="alert" hidden>這次未能自動儲存，請到「預算規劃」頁按「備份全部資料」留存。</p>
+
+  <section class="panel" id="p_plan">
+    <div class="panel-head">
+      <button type="button" class="collapse-btn" data-target="p_plan" aria-expanded="true"><h2>花費規劃</h2><span class="tog">收起</span></button>
+    </div>
+    <div class="panel-body">
+      <div class="plan-grid">
+        <div class="plan-box bud-box"><label class="label" for="budIn">本月花費預算</label><div class="bud-val"><span>$</span><input id="budIn" type="text" inputmode="numeric" autocomplete="off" placeholder="0"></div></div>
+        <div class="plan-box"><div class="label">已規劃花費</div><strong id="planSpent">$0</strong></div>
+        <div class="plan-box"><div class="label" id="planLeftLbl">還剩</div><strong id="planLeft">$0</strong></div>
+      </div>
+      <div class="plan-bar"><i id="planBar"></i></div>
+      <p class="note-s" id="planNote">填入本月花費預算，下面各項規劃會自動和它比較。</p>
+    </div>
+  </section>
+
+  <section class="panel gp" id="p_loan">
+    <div class="panel-head">
+      <button type="button" class="collapse-btn" data-target="p_loan" aria-expanded="true"><h2>貸款</h2><span class="tog">收起</span></button>
+      <a class="head-link" href="貸款繳納進度.html">貸款繳納進度 ›</a>
+    </div>
+    <div class="panel-body">
+      <div class="pair">
+        <div class="card merged-card" data-g="loan1">
+          <div class="src-head"><span class="label">房屋貸款</span></div>
+          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
+          <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <p class="grp-note">每月要繳的房貸本息，包含房貸利息與本金。</p>
+        </div>
+        <div class="card merged-card" data-g="loan2">
+          <div class="src-head"><span class="label">車輛貸款</span></div>
+          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
+          <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <p class="grp-note">每月要繳的車貸或機車貸款。</p>
+        </div>
+        <div class="card merged-card" data-g="loan3">
+          <div class="src-head"><span class="label">信貸卡費</span></div>
+          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
+          <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <p class="grp-note">每月要還的信用貸款、學貸、信用卡分期與卡費。</p>
+        </div>
+      </div>
+      <div class="card total-card big-total"><div class="label">總貸款</div><div class="value" id="t_loan">$0</div></div>
+    </div>
+  </section>
+
+  <section class="panel gp" id="p_life">
+    <div class="panel-head">
+      <button type="button" class="collapse-btn" data-target="p_life" aria-expanded="true"><h2>生活開銷</h2><span class="tog">收起</span></button>
+    </div>
+    <div class="panel-body">
+      <div class="pair">
+        <div class="card merged-card" data-g="life1">
+          <div class="src-head"><span class="label">生活必需</span></div>
+          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
+          <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <p class="grp-note">每天都會用到的錢，例如餐飲、買菜。</p>
+        </div>
+        <div class="card merged-card" data-g="life2">
+          <div class="src-head"><span class="label">交通通訊</span></div>
+          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
+          <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <p class="grp-note">上下班與聯絡用的錢，例如油資、捷運、手機費。</p>
+        </div>
+        <div class="card merged-card" data-g="life3">
+          <div class="src-head"><span class="label">健康保養</span></div>
+          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
+          <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <p class="grp-note">維持身體狀況的錢，例如看診、保健食品、剪髮。</p>
+        </div>
+      </div>
+      <div class="card total-card big-total"><div class="label">總生活開銷</div><div class="value" id="t_life">$0</div></div>
+    </div>
+  </section>
+
+  <section class="panel gp" id="p_fam">
+    <div class="panel-head">
+      <button type="button" class="collapse-btn" data-target="p_fam" aria-expanded="true"><h2>家庭開銷</h2><span class="tog">收起</span></button>
+      <a class="head-link" href="物品庫存與採購預算.html">物品庫存與採購預算 ›</a>
+    </div>
+    <div class="panel-body">
+      <div class="pair">
+        <div class="card merged-card" data-g="fam1">
+          <div class="src-head"><span class="label">居住</span></div>
+          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
+          <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <p class="grp-note">住的地方的錢，例如房租、水電瓦斯、管理費。</p>
+        </div>
+        <div class="card merged-card" data-g="fam2">
+          <div class="src-head"><span class="label">家人照顧</span></div>
+          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
+          <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <p class="grp-note">家人的錢，例如孩子學費、安親班、孝親費。</p>
+        </div>
+        <div class="card merged-card" data-g="fam3">
+          <div class="src-head"><span class="label">家用雜項</span></div>
+          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
+          <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <p class="grp-note">家裡的雜項，例如日用品、家電維修、寵物、清潔用品。</p>
+        </div>
+      </div>
+      <div class="card total-card big-total"><div class="label">總家庭開銷</div><div class="value" id="t_fam">$0</div></div>
+    </div>
+  </section>
+
+  <section class="panel gp" id="p_lei">
+    <div class="panel-head">
+      <button type="button" class="collapse-btn" data-target="p_lei" aria-expanded="true"><h2>休閒娛樂</h2><span class="tog">收起</span></button>
+    </div>
+    <div class="panel-body">
+      <div class="pair">
+        <div class="card merged-card" data-g="lei1">
+          <div class="src-head"><span class="label">吃喝玩樂</span></div>
+          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
+          <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <p class="grp-note">與朋友相聚的錢，例如聚餐、咖啡、電影、唱歌。</p>
+        </div>
+        <div class="card merged-card" data-g="lei2">
+          <div class="src-head"><span class="label">旅遊</span></div>
+          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
+          <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <p class="grp-note">出遊的錢，例如機票、住宿、門票、伴手禮。</p>
+        </div>
+        <div class="card merged-card" data-g="lei3">
+          <div class="src-head"><span class="label">訂閱娛樂</span></div>
+          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
+          <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <p class="grp-note">每月自動扣款的娛樂，例如影音、音樂、遊戲。</p>
+        </div>
+      </div>
+      <div class="card total-card big-total"><div class="label">總休閒娛樂</div><div class="value" id="t_lei">$0</div></div>
+    </div>
+  </section>
+
+  <section class="panel" id="bkPanel">
+    <div class="panel-head"><h2>備份與還原</h2></div>
+    <div class="panel-body">
+      <p style="margin:0 0 12px;color:#5f6f66;font-size:.92rem;line-height:1.6;text-align:left">這一頁的記錄只存在目前使用的瀏覽器，換手機、換電腦、換瀏覽器或清除瀏覽器資料後就看不到了。8 頁的資料要一起到「預算規劃」頁備份，一個檔案就能全部帶走。</p>
+      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#385749;color:#fff;font-weight:600;text-decoration:none">前往預算規劃備份全部資料 ›</a>
+      <div hidden style="display:none"><button type="button" class="btn ghost" id="expBtn">匯出備份</button><button type="button" class="btn ghost" id="impBtn">匯入備份</button></div>
+    </div>
+  </section>
+
+  <p class="credit">© 2026 鯊鯊說心事｜IG：鯊鯊說心事</p>
+</main>
+
+<dialog id="expDlg" aria-labelledby="expTitle">
+  <div class="dlg-body">
+    <h3 id="expTitle">匯出備份</h3>
+    <p class="note-s">把下面的文字複製起來，存到備忘錄或傳給自己。到新的瀏覽器按「匯入備份」貼上即可。</p>
+    <textarea id="expText" readonly aria-label="備份內容"></textarea>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="expClose">關閉</button><button type="button" class="btn ghost" id="expDl">下載檔案</button><button type="button" class="btn" id="expCopy">複製</button></div>
+</dialog>
+
+<dialog id="delDlg" aria-labelledby="delTitle">
+  <div class="dlg-body">
+    <h3 id="delTitle">確定要刪除此筆紀錄嗎?</h3>
+    <p class="note-s" id="delInfo"></p>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="delCancel">取消</button><button type="button" class="btn danger" id="delOk">刪除</button></div>
+</dialog>
+
+<dialog id="impDlg" aria-labelledby="impTitle">
+  <div class="dlg-body">
+    <h3 id="impTitle">匯入備份</h3>
+    <p class="note-s">匯入後，會用備份取代目前的所有記錄。</p>
+    <div class="field"><label for="impFile">選擇備份檔</label><input id="impFile" type="file" accept=".json,.txt,application/json,text/plain"></div>
+    <div class="field"><label for="impText">或貼上備份文字</label><textarea id="impText"></textarea></div>
+    <p class="err" id="impErr" role="alert"></p>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="impCancel">取消</button><button type="button" class="btn" id="impOk">匯入</button></div>
+</dialog>
+
+<script>
+/* 輸入法組字保護：組字中不改寫欄位內容，避免數字重複 */
+(function () {
+  var sel = 'input[inputmode="numeric"],input[inputmode="decimal"]';
+  function isNum(t) { return t && t.matches && t.matches(sel); }
+  document.addEventListener('compositionstart', function (e) { if (isNum(e.target)) e.target._ime = 1; }, true);
+  document.addEventListener('input', function (e) {
+    var t = e.target; if (!isNum(t)) return;
+    if (t._ime || e.isComposing) { e.stopImmediatePropagation(); return; }
+    if (/[０-９．，]/.test(t.value)) t.value = t.value.replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); }).replace(/．/g, '.').replace(/，/g, ',');
+  }, true);
+  document.addEventListener('compositionend', function (e) {
+    var t = e.target; if (!isNum(t) || !t._ime) return;
+    setTimeout(function () { t._ime = 0; t.dispatchEvent(new Event('input', { bubbles: true })); }, 0);
+  }, true);
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+  var KEY = 'daily-spend-v1', GIDS = ['loan', 'life', 'fam', 'lei'];
+  var $ = function (id) { return document.getElementById(id); };
+  var data = { version: 1, extras: {}, budget: {} };            // extras: { 'life1': { 'YYYY-MM': [ {name, amt} ] } }
+  var month = '', saveFailed = false;
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function shiftMonth(m, n) { var p = m.split('-'); var d = new Date(Number(p[0]), Number(p[1]) - 1 + n, 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1); }
+  function monthText(m) { var p = m.split('-'); return p[0] + ' 年 ' + Number(p[1]) + ' 月'; }
+  function money(n) { var r = Math.round(n); return (r < 0 ? '-$' : '$') + Math.abs(r).toLocaleString('en-US'); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function dig(v) { return String(v || '').replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); }).replace(/[^\d]/g, ''); }   // 全形數字（注音輸入）也能讀成金額
+  function amt(v) { v = Number(v); return isFinite(v) && v >= 0 ? Math.round(v) : 0; }
+
+  function parseData(d) {
+    if (!d || typeof d !== 'object' || !d.extras || typeof d.extras !== 'object') return null;
+    var out = { version: 1, extras: {}, budget: {} }, KEYRE = /^\d{4}-\d{2}$/;
+    if (d.budget && typeof d.budget === 'object') Object.keys(d.budget).forEach(function (k) { if (KEYRE.test(k)) out.budget[k] = amt(d.budget[k]); });
+    Object.keys(d.extras).forEach(function (g) {
+      if (!/^(life|fam|lei|loan)[123]$/.test(g) || !d.extras[g] || typeof d.extras[g] !== 'object') return;
+      out.extras[g] = {};
+      Object.keys(d.extras[g]).forEach(function (k) {
+        if (!KEYRE.test(k) || !Array.isArray(d.extras[g][k])) return;
+        out.extras[g][k] = d.extras[g][k].slice(0, 30).map(function (x) { x = x || {}; return { name: String(x.name || '').slice(0, 20), amt: amt(x.amt) }; });
+      });
+    });
+    return out;
+  }
+  function load() { try { var raw = localStorage.getItem(KEY); if (raw) { var p = parseData(JSON.parse(raw)); if (p) data = p; } } catch (e) {} }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(data)); saveFailed = false; } catch (e) { saveFailed = true; }
+    $('saveNote').hidden = !saveFailed;
+  }
+  function extrasOf(g, m) {                              // 每個月各自記錄：沒填過的月份從空白開始
+    var ex = data.extras[g] || (data.extras[g] = {});
+    return ex[m] || [];
+  }
+  function ownExtras(g) { var ex = data.extras[g] || (data.extras[g] = {}); if (!ex[month]) ex[month] = JSON.parse(JSON.stringify(extrasOf(g, month))); return ex[month]; }
+  var PLAN_KEY = 'household-expense-v1';
+  function readPlan(m) {                              // 預算規劃（同一個瀏覽器）的收入與「花費」目標；讀不到回傳 null
+    try {
+      var raw = localStorage.getItem(PLAN_KEY); if (!raw) return { income: 0, v: null };
+      var d = JSON.parse(raw), sl = (d && d.slots) || {}, b = 0, best = null;
+      if (Array.isArray(sl[m])) best = m; else Object.keys(sl).forEach(function (k) { if (k < m && (best === null || k > best)) best = k; });
+      if (best !== null && Array.isArray(sl[best])) sl[best].forEach(function (x) { b += Number(x && x.amt) || 0; });
+      var pl = d.plan || {}, P = { '532': [5, 3, 2], '631': [6, 3, 1], '333': [3, 3, 3] }, v = null;
+      if (pl.mode === 'custom' && Array.isArray(pl.amounts)) { v = Number(pl.amounts[0]) || 0; }
+      else if (b > 0) { var pr = P[pl.mode] || P['532']; v = Math.round(b * pr[0] / (pr[0] + pr[1] + pr[2])); }
+      return { income: b, v: v > 0 ? Math.round(v) : null, mode: pl.mode };
+    } catch (e) { return { income: 0, v: null }; }
+  }
+  function writePlan(v, income) {                     // 這裡改的花費預算，同步成預算規劃的「花費」目標（自訂）
+    try {
+      var raw = localStorage.getItem(PLAN_KEY), d = raw ? JSON.parse(raw) : null;
+      if (!d || typeof d !== 'object') d = { version: 2, items: [] };
+      if (!Array.isArray(d.items)) d.items = [];
+      var pl = d.plan && typeof d.plan === 'object' ? d.plan : (d.plan = { mode: '532', custom: [4, 3, 3] });
+      var wasCustom = pl.mode === 'custom' && Array.isArray(pl.amounts) && pl.amounts.length === 3;
+      if (!wasCustom) {                                  // 從 5:3:2 等比例切到自訂：另外兩格先帶入原本比例算出的金額
+        var P = { '532': [5, 3, 2], '631': [6, 3, 1], '333': [3, 3, 3] }, pr = P[pl.mode] || P['532'], sm = pr[0] + pr[1] + pr[2];
+        pl.amounts = income > 0 ? pr.map(function (x) { return Math.round(income * x / sm); }) : [0, 0, 0];
+        pl.edited = [1, 0];
+      }
+      if (!Array.isArray(pl.edited) || pl.edited.length !== 2) pl.edited = [1, 0];
+      pl.amounts[0] = v; pl.mode = 'custom';
+      var e = pl.edited.filter(function (x) { return x !== 0; }); e.push(0); pl.edited = e.slice(-2);
+      localStorage.setItem(PLAN_KEY, JSON.stringify(d));
+    } catch (e) {}
+  }
+  function budW(v) { var c = (v.match(/,/g) || []).length; return (Math.max(1, v.length - c * 0.5) + 0.5) + 'ch'; }
+  function budgetOf(m) {                              // 預算規劃有收入：沒自己改就用它；沒收入：以預算規劃的花費目標為準
+    var bd = data.budget || (data.budget = {});
+    if (m !== todayISO().slice(0, 7)) return bd[m] != null ? bd[m] : 0;   // 預算規劃只對應「這個月」，其他月份各自填
+    var pp = readPlan(m);
+    if (pp.income > 0) return pp.v != null ? pp.v : 0;
+    if (pp.v != null) return pp.v;
+    return bd[m] != null ? bd[m] : 0;
+  }
+  function totalOf(g) { var t = 0; extrasOf(g, month).forEach(function (x) { t += x.amt; }); return t; }
+
+  var cards = {};
+  Array.prototype.forEach.call(document.querySelectorAll('[data-g]'), function (c) { cards[c.getAttribute('data-g')] = c; });
+  function build(g) {
+    var box = cards[g].querySelector('.xbox'); box.textContent = ''; var list = extrasOf(g, month); box.dataset.key = month + '|' + list.length;
+    list.forEach(function (x, i) {
+      var r = el('div', 'extra-row');
+      var nm = document.createElement('input'); nm.type = 'text'; nm.className = 'ex-name'; nm.placeholder = '項目'; nm.maxLength = 20; nm.value = x.name; nm.setAttribute('aria-label', '項目 ' + (i + 1));
+      var am = el('div', 'amt'); am.appendChild(el('span', '', '$'));
+      var ai = document.createElement('input'); ai.type = 'text'; ai.inputMode = 'numeric'; ai.autocomplete = 'off'; ai.placeholder = '金額'; ai.className = 'ex-amt'; ai.value = x.amt ? x.amt.toLocaleString('en-US') : ''; ai.setAttribute('aria-label', '金額 ' + (i + 1));
+      am.appendChild(ai);
+      var del = document.createElement('button'); del.type = 'button'; del.className = 'ex-del'; del.textContent = '×'; del.setAttribute('aria-label', '刪除這一欄');
+      r.appendChild(nm); r.appendChild(am); r.appendChild(del); box.appendChild(r);
+      nm.addEventListener('input', function () { ownExtras(g)[i].name = nm.value.slice(0, 20); save(); });
+      ai.addEventListener('input', function () {
+        var dg = dig(ai.value).slice(0, 9); ai.value = dg ? Number(dg).toLocaleString('en-US') : '';
+        ownExtras(g)[i].amt = dg ? Number(dg) : 0; save(); render();
+      });
+      del.addEventListener('click', function () { askDel(g, i); });
+      r.addEventListener('focusout', function (ev) {          // 新增後沒填內容就離開：自動收掉這一欄
+        if (ev.relatedTarget && r.contains(ev.relatedTarget)) return;
+        setTimeout(function () {
+          if (r.contains(document.activeElement) || !r.parentNode) return;
+          var arr = ownExtras(g), k = arr.indexOf(x); if (k < 0) k = i;
+          var it = arr[k]; if (!it || String(it.name || '').trim() !== '' || it.amt) return;
+          arr.splice(k, 1); save(); build(g); render();
+        }, 0);
+      });
+    });
+  }
+  Object.keys(cards).forEach(function (g) {
+    var c = cards[g];
+    c.querySelector('.xedit').addEventListener('click', function () {
+      var w = c.querySelector('.extra-wrap'), on = !w.classList.contains('editing');
+      w.classList.toggle('editing', on); this.setAttribute('aria-pressed', on ? 'true' : 'false'); this.textContent = on ? '完成' : '編輯欄位';
+    });
+    c.querySelector('.xadd').addEventListener('click', function () {
+      var arr = ownExtras(g); if (arr.length >= 30) return; arr.push({ name: '', amt: 0 }); save(); build(g); render();
+      var n = c.querySelectorAll('.ex-name'); try { n[n.length - 1].focus(); } catch (e) {}
+    });
+  });
+  var delAsk = null, undo = null, undoTimer = null;          // 刪除項目：先確認，10 秒內可復原
+  function askDel(g, i) {
+    var it = ownExtras(g)[i]; if (!it) return;
+    delAsk = { g: g, m: month, item: it };
+    $('delInfo').textContent = (String(it.name || '').trim() || '（未命名）') + '　' + money(it.amt);
+    openDlg($('delDlg'));
+  }
+  $('delCancel').addEventListener('click', function () { delAsk = null; closeDlg($('delDlg')); });
+  $('delOk').addEventListener('click', function () {
+    var a = delAsk; delAsk = null; closeDlg($('delDlg'));
+    if (!a || a.m !== month) return;
+    var arr = ownExtras(a.g), k = arr.indexOf(a.item); if (k < 0) return;
+    arr.splice(k, 1); save(); build(a.g); render();
+    showUndo({ g: a.g, m: a.m, i: k, item: a.item });
+  });
+  function undoBarOf(g) {
+    var w = cards[g].querySelector('.extra-wrap'), b = w.querySelector('.undo-bar');
+    if (!b) {
+      b = el('div', 'undo-bar'); b.setAttribute('role', 'status'); b.appendChild(el('span', '', ''));
+      var bt = el('button', 'btn ghost small', '復原'); bt.type = 'button'; bt.addEventListener('click', doUndo); b.appendChild(bt);
+      w.appendChild(b);
+    }
+    return b;
+  }
+  function hideUndo() { clearTimeout(undoTimer); undo = null; Array.prototype.forEach.call(document.querySelectorAll('.undo-bar'), function (b) { b.hidden = true; }); }
+  function showUndo(u) {
+    hideUndo(); undo = u; var b = undoBarOf(u.g);
+    b.querySelector('span').textContent = '已刪除「' + (String(u.item.name || '').trim() || money(u.item.amt)) + '」';
+    b.hidden = false; undoTimer = setTimeout(hideUndo, 10000);
+  }
+  function doUndo() {
+    if (!undo) return;
+    var ex = data.extras[undo.g] || (data.extras[undo.g] = {}), arr = ex[undo.m] || (ex[undo.m] = []);
+    arr.splice(Math.min(undo.i, arr.length), 0, undo.item);
+    var g = undo.g; month = undo.m; hideUndo(); save(); build(g); render();
+  }
+  function render() {
+    $('monthLabel').textContent = monthText(month);
+    var grand = 0;
+    GIDS.forEach(function (p) {
+      var sub = 0;
+      [1, 2, 3].forEach(function (n) {
+        var g = p + n, c = cards[g], box = c.querySelector('.xbox');
+        if (box.dataset.key !== month + '|' + extrasOf(g, month).length) build(g);
+        var t = totalOf(g); sub += t; c.querySelector('.xsum').textContent = money(t);
+      });
+      $('t_' + p).textContent = money(sub); grand += sub;
+    });
+    var bud = budgetOf(month), left = bud - grand;
+    if (document.activeElement !== $('budIn')) $('budIn').value = bud ? bud.toLocaleString('en-US') : '';
+    $('budIn').style.width = budW($('budIn').value);
+    $('planSpent').textContent = money(grand);
+    if (bud > 0) { $('planLeftLbl').textContent = left < 0 ? '超出' : '還剩'; $('planLeft').textContent = money(Math.abs(left)); $('planLeft').classList.remove('unset'); } else { $('planLeftLbl').textContent = '還剩'; $('planLeft').textContent = '未規劃預算'; $('planLeft').classList.add('unset'); }
+    var over = bud > 0 && left < 0;
+    $('planLeft').parentNode.classList.toggle('over', over); $('planBar').parentNode.classList.toggle('over', over);
+    $('planBar').style.width = (bud > 0 ? Math.min(100, grand * 100 / bud) : 0) + '%';
+    var isCur = month === todayISO().slice(0, 7), pp = isCur ? readPlan(month) : { income: 0, v: null }, usedTxt = bud > 0 ? (left < 0 ? '目前超出 ' + money(-left) + '。' : '已用掉 ' + Math.round(grand * 100 / bud) + '%。') : '';
+    $('budIn').readOnly = false; $('budIn').parentNode.classList.remove('locked');
+    $('planNote').textContent = !isCur ? '這個月的預算自己填，每個月各自記錄。' + usedTxt : (pp.income > 0 && pp.v != null) ? '已套用預算規劃的花費 ' + money(pp.v) + '。臨時要改可以直接在這裡改，會同步到預算規劃。' + usedTxt : '預算規劃沒有輸入數字時，這裡可自由更改，會同步至預算規劃。' + usedTxt;
+  }
+  var copyAsk = false;
+  function hasData(m) { return GIDS.some(function (p) { return [1, 2, 3].some(function (n) { var x = (data.extras[p + n] || {})[m]; return x && x.length; }); }); }
+  $('copyPrev').addEventListener('click', function () {
+    var prev = shiftMonth(month, -1), msg = $('copyMsg');
+    if (!hasData(prev) && !(data.budget && data.budget[prev] != null)) { msg.textContent = monthText(prev) + '沒有資料可以沿用。'; copyAsk = false; this.textContent = '沿用上個月'; return; }
+    if (hasData(month) && !copyAsk) { copyAsk = true; this.textContent = '再按一次，覆蓋這個月'; msg.textContent = '這個月已經有資料，沿用會取代它。'; return; }
+    copyAsk = false; this.textContent = '沿用上個月';
+    GIDS.forEach(function (p) { [1, 2, 3].forEach(function (n) {
+      var g = p + n, ex = data.extras[g] || (data.extras[g] = {});
+      if (ex[prev] && ex[prev].length) ex[month] = JSON.parse(JSON.stringify(ex[prev])); else delete ex[month];
+    }); });
+    var bd = data.budget || (data.budget = {});
+    if (month !== todayISO().slice(0, 7) && bd[prev] != null) bd[month] = bd[prev];
+    save(); Object.keys(cards).forEach(build); render(); msg.textContent = '已沿用' + monthText(prev) + '的內容。';
+  });
+  function resetCopy() { copyAsk = false; $('copyPrev').textContent = '沿用上個月'; $('copyMsg').textContent = ''; }
+  $('budIn').addEventListener('input', function () {
+    var dg = dig(this.value).slice(0, 9); this.value = dg ? Number(dg).toLocaleString('en-US') : '';
+    this.style.width = budW(this.value);
+    var v = dg ? Number(dg) : 0, bd = data.budget || (data.budget = {}), inc = readPlan(month).income;
+    if (month !== todayISO().slice(0, 7)) bd[month] = v;
+    else if (inc > 0 || v > 0 || readPlan(month).v != null) { writePlan(v, inc); delete bd[month]; } else bd[month] = v;
+    save(); render();
+  });
+  window.addEventListener('storage', function () { load(); render(); });
+  window.addEventListener('focus', function () { load(); render(); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) { load(); render(); } });
+  $('prevM').addEventListener('click', function () { month = shiftMonth(month, -1); resetCopy(); render(); });
+  $('nextM').addEventListener('click', function () { month = shiftMonth(month, 1); resetCopy(); render(); });
+  Array.prototype.forEach.call(document.querySelectorAll('.collapse-btn'), function (b) {
+    b.addEventListener('click', function () {
+      var p = $(b.getAttribute('data-target')), c = p.classList.toggle('collapsed');
+      b.setAttribute('aria-expanded', String(!c)); b.querySelector('.tog').textContent = c ? '展開' : '收起';
+    });
+  });
+
+  function openDlg(d) { try { if (typeof d.showModal === 'function') { d.showModal(); return; } } catch (e) {} d.setAttribute('open', ''); d.classList.add('dlg-fallback'); }
+  function closeDlg(d) { try { if (typeof d.close === 'function') { d.close(); return; } } catch (e) {} d.removeAttribute('open'); d.classList.remove('dlg-fallback'); }
+  var inFrame = false; try { inFrame = window.self !== window.top; } catch (e) { inFrame = true; }
+  if (inFrame) $('expDl').hidden = true;
+  $('expBtn').addEventListener('click', function () { $('expText').value = JSON.stringify(data); openDlg($('expDlg')); });
+  $('expClose').addEventListener('click', function () { closeDlg($('expDlg')); });
+  $('expCopy').addEventListener('click', function () {
+    var ta = $('expText'), b = $('expCopy');
+    function done() { b.textContent = '已複製'; setTimeout(function () { b.textContent = '複製'; }, 1500); }
+    function fallback() { ta.focus(); ta.select(); try { if (document.execCommand('copy')) done(); } catch (e) {} }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, fallback); else fallback();
+  });
+  $('expDl').addEventListener('click', function () {
+    try { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([$('expText').value], { type: 'application/json' })); a.download = '生活預算備份_' + todayISO() + '.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); } catch (e) {}
+  });
+  $('impBtn').addEventListener('click', function () { $('impText').value = ''; $('impFile').value = ''; $('impErr').textContent = ''; openDlg($('impDlg')); });
+  $('impCancel').addEventListener('click', function () { closeDlg($('impDlg')); });
+  $('impFile').addEventListener('change', function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    var r = new FileReader(); r.onload = function () { $('impText').value = String(r.result || ''); }; r.readAsText(f);
+  });
+  $('impOk').addEventListener('click', function () {
+    var txt = $('impText').value.trim(); if (!txt) { $('impErr').textContent = '請選擇備份檔，或貼上備份文字。'; return; }
+    var p = null; try { p = parseData(JSON.parse(txt)); } catch (e) {}
+    if (!p) { $('impErr').textContent = '這不是有效的備份內容，請確認有複製完整。'; return; }
+    data = p; save(); closeDlg($('impDlg')); Object.keys(cards).forEach(build); render();
+  });
+
+  load();
+  month = todayISO().slice(0, 7);
+  Object.keys(cards).forEach(build);
+  render();
+})();
+</script>
+</body>
+</html>

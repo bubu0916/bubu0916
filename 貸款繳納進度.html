@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>貸款繳納進度</title>
+<style>
+  /* 版面：同「預算規劃」——貸款集點 */
+  :root {
+    --green: #385749; --ink: #293831; --bg: #F7F5EF; --card: #FFFEFA; --line: #D3DDD3;
+    --tint: #E8EEE5; --muted: #5f6f66; --warn: #b3261e; --amber: #8a5a00;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; font-size: 16px; line-height: 1.6; }
+  .hero { background: #234838; color: #fff; padding-block: 30px 26px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .hero-in { max-width: 960px; margin: 0 auto; }
+  .hero-in { text-align: center; }
+  .hero h1 { margin: 0 0 6px; font-size: 1.6rem; text-wrap: balance; }
+  .hero p { margin: 0; color: #dbe7de; text-wrap: balance; }
+  .wrap { max-width: 960px; margin: 0 auto; padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+  .card.tint { background: var(--tint); border-color: transparent; }
+  .label { font-size: .92rem; color: var(--muted); }
+  .value { font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.3; overflow-wrap: anywhere; }
+  .value.neg { color: var(--warn); }
+  .sub { font-size: .85rem; color: var(--muted); }
+  button, input, select { font: inherit; }
+  input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); min-height: 44px; }
+  input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .btn { padding: 10px 16px; border-radius: 10px; border: 1px solid var(--green); background: var(--green); color: #fff; font-weight: 600; cursor: pointer; min-height: 44px; }
+  .btn.ghost { background: #fff; color: var(--green); border-color: var(--line); }
+  .btn.danger { background: #fff; color: var(--warn); border-color: #e3c3c0; }
+  .btn.small { white-space: nowrap; flex: none; padding: 6px 12px; min-height: 36px; font-size: .92rem; }
+  .btn:disabled { opacity: .55; cursor: default; }
+
+  .monthbar { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 14px; }
+  .monthbar .m { min-width: 9.5em; text-align: center; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .monthbar .btn { padding: 8px 14px; }
+
+  .income-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-bottom: 12px; }
+  .income-row.has-total { grid-template-columns: minmax(0, 5fr) minmax(0, 2fr); }
+  .merged-card { padding: 0; overflow: hidden; }
+  .src-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; background: var(--tint); }
+  .src-head { flex-wrap: wrap; }
+  .src-btns { display: flex; gap: 8px; }
+  .src-head .label { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+  .src-list { display: grid; gap: 8px; margin-bottom: 8px; }
+  .src-item { display: flex; gap: 8px; align-items: center; }
+  .src-item input { flex: 1 1 auto; min-width: 0; }
+  .slots { display: flex; flex-wrap: wrap; gap: 10px; padding: 12px 14px 14px; }
+  .slot { border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: var(--card); min-width: 0; flex: 1 1 140px; }
+  .slot:focus-within { border-color: var(--green); }
+  .slot select { min-height: 36px; padding: 4px 8px; border: 0; border-radius: 999px; background: var(--tint); color: var(--green); font-weight: 600; font-size: .95rem; }
+  .slot .amt { display: flex; align-items: baseline; gap: 4px; }
+  .slot .amt span { font-weight: 700; color: var(--muted); }
+  .slot .amt input { min-height: 36px; padding: 4px 0; border: 0; border-radius: 0; background: transparent; outline: none; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 0; }
+  .plans-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; }
+  .plans-head .label { font-weight: 700; color: var(--ink); font-size: 1.05rem; }
+  .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .plan { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; cursor: pointer; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .plan:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .plan[aria-checked="true"] { background: var(--tint); border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+  .plan .ratio { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .plan .cust { display: flex; align-items: center; gap: 4px; }
+  .plan .cust input { min-height: 36px; padding: 4px 2px; text-align: center; font-weight: 700; font-size: 1.05rem; min-width: 0; border-radius: 8px; }
+  .plan .pct { font-size: .85rem; color: var(--muted); }
+  .plan .row { display: flex; justify-content: space-between; gap: 6px; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .plan .row span:first-child { color: var(--muted); }
+  .buckets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 12px 0 6px; }
+  .bucket { padding: 12px 14px; }
+  .bk-name { font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .bk-name::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+  .bk-link { font: inherit; font-weight: 700; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 4px; }
+  .bk-link::after { content: " ↓"; font-weight: 400; color: var(--muted); }
+  .bk-link:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 4px; }
+  @keyframes flashCard { from { box-shadow: 0 0 0 3px var(--green); } to { box-shadow: 0 0 0 3px transparent; } }
+  .flash { animation: flashCard 1.4s ease-out; }
+  @media (prefers-reduced-motion: reduce) { .flash { animation: none; box-shadow: 0 0 0 3px var(--green); } }
+  .bk-val { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 4px; overflow-wrap: anywhere; }
+  .bk-val small { font-size: .85rem; font-weight: 400; color: var(--muted); }
+  .bk-bar { height: 8px; border-radius: 999px; background: var(--tint); overflow: hidden; margin: 8px 0 6px; }
+  .bk-bar i { display: block; height: 100%; width: 0; background: var(--c); border-radius: 999px; }
+  .bucket.over .bk-bar i { background: var(--warn); }
+  .bucket.over .bk-sub { color: var(--warn); }
+  .bk-sub { font-size: .88rem; color: var(--muted); }
+  .bk-note { margin: 0 0 14px; font-size: .85rem; color: var(--muted); }
+  .slots.rows { flex-direction: column; flex-wrap: nowrap; gap: 0; padding: 4px 14px 0; }
+  .rows .slot { flex: none; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; padding: 10px 0; }
+  .rows .slot select { flex: 0 1 46%; min-width: 0; }
+  .rows .slot .amt { flex: 1 1 auto; justify-content: flex-end; min-width: 0; }
+  .rows .slot .amt span { margin-left: auto; }
+  .rows .slot .amt input { text-align: right; flex: 0 1 8.5em; width: 8.5em; min-width: 0; }
+  .extra-wrap { padding: 8px 14px 0; display: flex; flex-direction: column; gap: 8px; }
+  .extra-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .extra-row .ex-name { flex: 1 1 40%; min-width: 0; min-height: 36px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--ink); font-size: .95rem; }
+  .extra-row .amt { flex: 1 1 40%; min-width: 0; display: flex; align-items: baseline; gap: 4px; justify-content: flex-end; }
+  .extra-row .amt span { font-weight: 700; color: var(--muted); }
+  .extra-row .ex-amt { flex: 1 1 auto; width: 100%; min-width: 0; min-height: 36px; padding: 4px 0; border: 0; background: transparent; outline: none; text-align: right; font-size: 1.1rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ex-del { flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--tint); color: var(--muted); font-size: 1.1rem; cursor: pointer; }
+  .extra-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ex-del { display: none; }
+  .extra-wrap.editing .ex-del { display: inline-block; }
+  #editExtra[aria-pressed="true"] { background: var(--green); color: #fff; border-color: var(--green); }
+  .rows-total { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 14px 14px; font-variant-numeric: tabular-nums; }
+  .rows-total strong { font-size: 1.3rem; }
+  #needPanel .pair, #invPanel .pair, #savPanel .pair { margin-bottom: 0; }
+  .grp-note { margin: 0; padding: 0 14px 14px; text-align: center; color: var(--muted); font-size: .85rem; line-height: 1.5; }
+  .pair .src-head { justify-content: center; }
+  .pair .src-head .label { text-align: center; }
+  .pair .extra-row .ex-name { text-align: center; }
+  .pair .extra-btns { justify-content: center; }
+  .pair .rows-total { justify-content: center; gap: 14px; }
+  #needPanel .panel-head, #invPanel .panel-head, #savPanel .panel-head { justify-content: flex-start; }
+  #needPanel .collapse-btn, #invPanel .collapse-btn, #savPanel .collapse-btn { justify-content: flex-start; }
+  #planPanel .alloc { margin-bottom: 0; }
+  #planPanel .plans { margin-bottom: 12px; }
+  #planPanel .note-s { margin: 0 0 10px; }
+  .alloc-title { font-weight: 700; margin-bottom: 8px; }
+  .alloc-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--tint); gap: 2px; }
+  .alloc-bar i { display: block; height: 100%; min-width: 0; }
+  .alloc-bar i:nth-child(1) { background: #234838; }
+  .alloc-bar i:nth-child(2) { background: #6f8f7c; }
+  .alloc-bar i:nth-child(3) { background: #b9cdbd; }
+  .alloc-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+  .alloc-item .n { font-size: .9rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .alloc-item .n::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+  .alloc-item .v { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .alloc-item .p { font-size: .85rem; color: var(--muted); }
+  .pair { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; align-items: start; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .stat { padding: 12px 14px; }
+  .stat .value { font-size: 1.3rem; }
+  .grid2.one { grid-template-columns: minmax(0, 1fr); }
+  .total-card { background: #234838; border-color: #234838; color: #fff; display: flex; flex-direction: column; justify-content: center; }
+  .total-card .label { color: #dbe7de; }
+  .big-total { margin-top: 10px; text-align: center; align-items: center; padding: 8px 14px; }
+  .big-total .label { font-size: .8rem; }
+  .big-total .value { font-size: 1.3rem; }
+  .big-total .bt-sub { display: none; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+
+  .progress-wrap { margin: 2px 0 12px; }
+  .progress-label { display: flex; justify-content: space-between; gap: 10px; font-size: .92rem; color: var(--muted); margin-bottom: 6px; flex-wrap: wrap; }
+  .progress { height: 12px; border-radius: 999px; background: var(--tint); overflow: hidden; }
+  .progress-fill { height: 100%; width: 0; background: var(--green); border-radius: 999px; }
+  .progress-fill.over { background: var(--warn); }
+
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 14px; overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 12px 16px; background: var(--tint); }
+  .panel-head h2 { margin: 0; font-size: 1.1rem; }
+  .panel-body { padding: 14px 16px; }
+  .collapse-btn { display: inline-flex; align-items: center; gap: 8px; background: none; border: 0; padding: 0; color: var(--ink); cursor: pointer; text-align: left; }
+  .collapse-btn .tog { font-size: .9rem; color: var(--muted); }
+  .panel.collapsed .panel-body { display: none; }
+  .head-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .head-tools select { width: auto; min-width: 8em; }
+
+  .cats { display: grid; gap: 12px; }
+  .cat-row .top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  .cat-row .amt { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .cat-bar { height: 10px; background: var(--tint); border-radius: 999px; overflow: hidden; }
+  .cat-bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
+  .empty { text-align: center; color: var(--muted); padding: 22px 12px; }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: var(--tint); font-weight: 600; font-size: .92rem; padding: 10px 12px; text-align: center; }
+  td { padding: 10px 12px; border-top: 1px solid var(--line); text-align: center; vertical-align: middle; }
+  td.note { text-align: left; overflow-wrap: anywhere; }
+  td.num, th.num { font-variant-numeric: tabular-nums; }
+  .tag { display: inline-block; padding: 1px 10px; border-radius: 999px; background: var(--tint); color: var(--green); font-size: .85rem; font-weight: 600; }
+  .actions { display: flex; gap: 6px; justify-content: center; }
+  .credit { margin: 22px 0 0; text-align: center; font-size: .85rem; color: var(--muted); }
+  .formula { margin: 0 0 12px; color: var(--muted); }
+  .note-s { margin: 0 0 12px; color: var(--muted); font-size: .92rem; }
+
+  dialog { border: 0; border-radius: 16px; padding: 0; width: min(440px, calc(100vw - 32px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; color: var(--ink); background: var(--card); position: fixed; inset: 0; margin: auto; z-index: 1000; }
+  dialog::backdrop { background: rgba(35, 56, 46, .45); }
+  dialog.dlg-fallback { box-shadow: 0 0 0 100vmax rgba(35, 56, 46, .45); }
+  dialog:not([open]) { display: none; }
+  .dlg-body { padding: 18px 18px 6px; }
+  .dlg-body h3 { margin: 0 0 8px; font-size: 1.15rem; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-weight: 600; margin-bottom: 4px; font-size: .95rem; }
+  .err { color: var(--warn); min-height: 1.3em; margin: 0 0 8px; }
+  .undo-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 12px 0 0; padding: 8px 12px; border-radius: 10px; background: var(--tint); font-size: .95rem; }
+  #loans > .undo-bar { margin: 0 0 14px; }
+  .undo-bar span { min-width: 0; overflow-wrap: anywhere; }
+  .dlg-act { display: flex; gap: 10px; justify-content: flex-end; padding: 12px 18px 16px; position: sticky; bottom: 0; background: var(--card); border-top: 1px solid var(--line); }
+  textarea { width: 100%; min-height: 140px; font: .82rem/1.4 ui-monospace, Menlo, Consolas, monospace; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
+
+  @media (max-width: 899px) {
+    #needPanel .panel-body, #invPanel .panel-body, #savPanel .panel-body { padding: 8px; }
+    .pair { gap: 6px; }
+    .pair .src-head { flex-direction: column; align-items: stretch; gap: 6px; padding: 8px; }
+    .pair .src-head .label { font-size: .95rem; text-align: center; }
+    .pair .src-btns { flex-direction: column; gap: 4px; }
+    .pair .src-btns .btn { width: 100%; min-height: 32px; padding: 2px 4px; font-size: .78rem; }
+    .pair .slots.rows { padding: 2px 8px 0; }
+    .pair .rows .slot { flex-direction: column; align-items: stretch; gap: 2px; padding: 8px 0; }
+    .pair .rows .slot select { flex: none; width: 100%; font-size: .78rem; padding: 2px 2px 2px 6px; }
+    .pair .rows .slot .amt { justify-content: flex-end; }
+    .pair .rows .slot .amt span { margin-left: 0; }
+    .pair .rows .slot .amt input { flex: 1 1 auto; width: 100%; font-size: .9rem; }
+    .pair .extra-wrap { padding: 2px 8px 0; }
+    .pair .extra-row { flex-wrap: wrap; gap: 2px; padding: 8px 0; }
+    .pair .extra-row .ex-name { flex: 1 1 100%; font-size: .8rem; padding: 2px 6px; min-height: 32px; }
+    .pair .extra-row .amt { flex: 1 1 0; }
+    .pair .extra-row .ex-amt { font-size: .9rem; }
+    .pair .ex-del { width: 24px; height: 24px; font-size: .9rem; }
+    .pair .extra-btns { flex-direction: column; gap: 4px; }
+    .pair .extra-btns .btn { width: 100%; min-height: 32px; padding: 2px 4px; font-size: .78rem; }
+    .grp-note { padding: 0 8px 10px; font-size: .75rem; }
+    .pair .rows-total { flex-direction: column; align-items: flex-end; gap: 0; padding: 8px; }
+    .pair .rows-total strong { font-size: 1rem; }
+  }
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 1.4rem; }
+    .grid2, .grid3, .income-row { gap: 10px; }
+    .income-row.has-total { grid-template-columns: minmax(0, 1fr); }
+    .buckets { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .alloc-list { gap: 6px; }
+    .alloc-item .v { font-size: 1rem; }
+    .stats, .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .stats > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .stat .value { font-size: 1.2rem; }
+    .grid3 { grid-template-columns: 1fr 1fr; }
+    .grid3 > :last-child { grid-column: 1 / -1; }
+    .value { font-size: 1.4rem; }
+    .slot { flex: 1 1 calc(50% - 5px); }
+    .head-tools { width: 100%; }
+    .head-tools select { flex: 1 1 120px; min-width: 0; }
+    .table-scroll { overflow: visible; }
+    table, tbody, tr, td { display: block; }
+    thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    tbody tr { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+    tbody tr:last-child { margin-bottom: 0; }
+    td { border: 0; padding: 5px 0; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; text-align: right; }
+    td::before { content: attr(data-label); flex: none; color: var(--muted); font-size: .9rem; text-align: left; }
+    td.note { text-align: right; }
+    td.act { display: block; margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+    td.act::before { content: none; }
+    td.act .actions .btn { flex: 1 1 auto; min-height: 40px; }
+    td.empty { display: block; text-align: center; }
+    td.empty::before { content: none; }
+    .dlg-act .btn { flex: 1 1 auto; }
+  }
+  .gp .pair { margin-bottom: 0; }
+  .gp .panel-head, .gp .collapse-btn { justify-content: flex-start; }
+  .grand { margin-bottom: 14px; }
+  @media (max-width: 899px) { .gp .panel-body { padding: 8px; } }
+
+  .add-form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: end; }
+  .add-form .field { margin: 0; min-width: 0; }
+  .add-form input { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; }
+  .add-form input[type=month] { -webkit-appearance: none; appearance: none; min-height: 44px; }
+  .add-form .btn { grid-column: 1 / -1; }
+  .loan { margin-bottom: 14px; padding: 0; overflow: hidden; }
+  .done-bar { display: flex; justify-content: center; margin: 0 0 12px; }
+  .done-bar[hidden] { display: none; }
+  .loan-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 12px 16px; background: var(--tint); }
+  .loan-head h3 { margin: 0; font-size: 1.1rem; }
+  .loan-head .pay { color: var(--muted); font-size: .95rem; }
+  .loan-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .loan-body { padding: 14px 16px 16px; }
+  .stamps { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 12px 8px; justify-items: center; }
+  .stamp { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted); font-size: .8rem; }
+  .stamp .dot { width: 46px; height: 46px; border-radius: 50%; border: 2px dashed var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #fff; background: var(--card); transition: background .15s, transform .15s; }
+  .stamp.done .dot { background: var(--green); border-style: solid; transform: scale(1.04); }
+  .stamp.done { color: var(--ink); font-weight: 600; }
+  .stamp.add .dot { border-color: var(--line); color: var(--green); font-size: 1.6rem; }
+  .loan-sum { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  .loan-sum strong { font-size: 1.1rem; }
+  .loan-bar { height: 8px; border-radius: 99px; background: var(--tint); margin-top: 12px; overflow: hidden; }
+  .loan-bar i { display: block; height: 100%; background: var(--green); border-radius: 99px; }
+  .loan-done { margin: 10px 0 0; text-align: center; font-weight: 700; color: var(--green); }
+  .add-months { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding: 10px 12px; border-radius: 12px; background: var(--tint); }
+  .add-months input { width: 5.5em; min-height: 36px; padding: 4px 8px; text-align: center; }
+  .page-links { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 14px; }
+  .page-links a { padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--green); font-weight: 600; font-size: .92rem; text-decoration: none; }
+  .page-links a:hover { background: var(--tint); }
+  .edit-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-bottom: 12px; }
+  .empty-s { text-align: center; color: var(--muted); padding: 24px 0; }
+  @media (max-width: 640px) { .add-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .stamps { grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); } }
+  @media (max-width: 480px) { .add-form { grid-template-columns: minmax(0, 1fr); } }
+  /* 網頁選單 */
+  .sitenav { background:#F7F5EF; border-bottom:1px solid #D3DDD3; }
+  .sitenav-in { max-width:520px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding-block:10px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); }
+  .sitenav a { flex:0 0 calc((100% - 24px) / 4); min-width:0; box-sizing:border-box; padding:6px 0; border-radius:999px; border:1px solid #D3DDD3; background:#FFFEFA; color:#385749; font-size:.8rem; font-weight:600; text-decoration:none; white-space:nowrap; line-height:1.5; text-align:center; }
+  @media (max-width:360px) { .sitenav-in { gap:6px; } .sitenav a { flex-basis:calc((100% - 18px) / 4); font-size:.72rem; } }
+  .sitenav a:hover { background:#E8EEE5; }
+  .sitenav a:focus-visible { outline:2px solid #385749; outline-offset:2px; }
+  .sitenav a[aria-current="page"] { background:#385749; border-color:#385749; color:#fff; }
+</style>
+</head>
+<body>
+<header class="hero"><div class="hero-in">
+  <h1>🏦 貸款繳納進度</h1>
+  <p>每繳一期，蓋一個圈圈，一步步把貸款還清🌿</p>
+</div></header>
+<noscript><p style="margin:0;padding:12px 16px;background:#FFF4E5;color:#8a5a00;text-align:center;font-size:.95rem;line-height:1.6">這個預覽沒有執行網頁程式，所以日期、按鈕和資料都無法使用。請改用 Safari 或 Chrome 開啟檔案，或使用網路預覽連結。</p></noscript>
+<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">預算規劃</a><a href="生活預算.html">生活預算</a><a href="日常花費.html">日常花費</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html" aria-current="page">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
+
+<main class="wrap">
+  <p class="err" id="saveNote" role="alert" hidden>這次未能自動儲存，請到「預算規劃」頁按「備份全部資料」留存。</p>
+
+  <section class="panel">
+    <div class="panel-head"><h2>新增貸款</h2></div>
+    <div class="panel-body">
+      <div class="add-form">
+        <div class="field"><label for="nName">貸款名稱</label><input id="nName" type="text" maxlength="20" placeholder="例如 房貸"></div>
+        <div class="field"><label for="nPay">每月金額</label><input id="nPay" type="text" inputmode="numeric" placeholder="0"></div>
+        <div class="field"><label for="nStart">開始月份</label><input id="nStart" type="month"></div>
+        <div class="field"><label for="nCount">先建幾個圈圈</label><input id="nCount" type="number" min="1" max="600" placeholder="1"></div>
+        <button type="button" class="btn" id="addLoan">+ 新增貸款</button>
+      </div>
+      <p class="err" id="addErr" role="alert"></p>
+    </div>
+  </section>
+
+  <div class="stats" style="margin-bottom:14px">
+    <div class="card stat"><div class="label">累積已繳期數</div><div class="value" id="sumDone">0 期</div></div>
+    <div class="card stat"><div class="label">累積已繳金額</div><div class="value" id="sumPaid">$0</div></div>
+    <div class="card stat"><div class="label">尚未繳金額</div><div class="value" id="sumLeft">$0</div></div>
+  </div>
+
+  <div class="done-bar" id="doneBar" hidden><button type="button" class="btn ghost small" id="hideDoneBtn" aria-pressed="false"></button></div>
+  <div id="loans"></div>
+
+  <section class="panel" id="bkPanel">
+    <div class="panel-head"><h2>備份與還原</h2></div>
+    <div class="panel-body">
+      <p style="margin:0 0 12px;color:#5f6f66;font-size:.92rem;line-height:1.6;text-align:left">這一頁的記錄只存在目前使用的瀏覽器，換手機、換電腦、換瀏覽器或清除瀏覽器資料後就看不到了。8 頁的資料要一起到「預算規劃」頁備份，一個檔案就能全部帶走。</p>
+      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#385749;color:#fff;font-weight:600;text-decoration:none">前往預算規劃備份全部資料 ›</a>
+      <div hidden style="display:none"><button type="button" class="btn ghost" id="expBtn">匯出備份</button><button type="button" class="btn ghost" id="impBtn">匯入備份</button></div>
+    </div>
+  </section>
+
+  <p class="credit">© 2026 鯊鯊說心事｜IG：鯊鯊說心事</p>
+</main>
+
+<dialog id="rmDlg" aria-labelledby="rmTitle">
+  <div class="dlg-body">
+    <h3 id="rmTitle">確定要移除最後一個圈圈嗎?</h3>
+    <p class="note-s" id="rmInfo"></p>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="rmCancel">取消</button><button type="button" class="btn danger" id="rmOk">移除</button></div>
+</dialog>
+
+<dialog id="expDlg" aria-labelledby="expTitle">
+  <div class="dlg-body">
+    <h3 id="expTitle">匯出備份</h3>
+    <p class="note-s">把下面的文字複製起來，存到備忘錄或傳給自己。到新的瀏覽器按「匯入備份」貼上即可。</p>
+    <textarea id="expText" readonly aria-label="備份內容"></textarea>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="expClose">關閉</button><button type="button" class="btn ghost" id="expDl">下載檔案</button><button type="button" class="btn" id="expCopy">複製</button></div>
+</dialog>
+
+<dialog id="impDlg" aria-labelledby="impTitle">
+  <div class="dlg-body">
+    <h3 id="impTitle">匯入備份</h3>
+    <p class="note-s">匯入後，會用備份取代目前的所有記錄。</p>
+    <div class="field"><label for="impFile">選擇備份檔</label><input id="impFile" type="file" accept=".json,.txt,application/json,text/plain"></div>
+    <div class="field"><label for="impText">或貼上備份文字</label><textarea id="impText"></textarea></div>
+    <p class="err" id="impErr" role="alert"></p>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="impCancel">取消</button><button type="button" class="btn" id="impOk">匯入</button></div>
+</dialog>
+
+<script>
+/* 輸入法組字保護：組字中不改寫欄位內容，避免數字重複 */
+(function () {
+  var sel = 'input[inputmode="numeric"],input[inputmode="decimal"]';
+  function isNum(t) { return t && t.matches && t.matches(sel); }
+  document.addEventListener('compositionstart', function (e) { if (isNum(e.target)) e.target._ime = 1; }, true);
+  document.addEventListener('input', function (e) {
+    var t = e.target; if (!isNum(t)) return;
+    if (t._ime || e.isComposing) { e.stopImmediatePropagation(); return; }
+    if (/[０-９．，]/.test(t.value)) t.value = t.value.replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); }).replace(/．/g, '.').replace(/，/g, ',');
+  }, true);
+  document.addEventListener('compositionend', function (e) {
+    var t = e.target; if (!isNum(t) || !t._ime) return;
+    setTimeout(function () { t._ime = 0; t.dispatchEvent(new Event('input', { bubbles: true })); }, 0);
+  }, true);
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+  var KEY = 'loan-stamps-v1';
+  var $ = function (id) { return document.getElementById(id); };
+  var data = { version: 1, loans: [] };             // loans: [ {id, name, pay, circles:[ {m:'YYYY-MM', done:bool} ]} ]
+  var editing = {}, delAsk = {}, addOpen = {}, saveFailed = false;
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function shiftMonth(m, n) { var p = m.split('-'); var d = new Date(Number(p[0]), Number(p[1]) - 1 + n, 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1); }
+  function money(n) { var r = Math.round(n); return (r < 0 ? '-$' : '$') + Math.abs(r).toLocaleString('en-US'); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function dig(v) { return String(v || '').replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); }).replace(/[^\d]/g, ''); }   // 全形數字（注音輸入）也能讀成金額
+  function amt(v) { v = Number(v); return isFinite(v) && v >= 0 ? Math.round(v) : 0; }
+  var MRE = /^\d{4}-\d{2}$/;
+  function parseData(d) {
+    if (!d || typeof d !== 'object' || !Array.isArray(d.loans)) return null;
+    var out = { version: 1, loans: [], hideDone: !!d.hideDone }, seen = {};
+    d.loans.slice(0, 30).forEach(function (l) {
+      if (!l || typeof l !== 'object') return;
+      var id = String(l.id || ''); if (!id || seen[id]) id = 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); seen[id] = 1;
+      var cs = Array.isArray(l.circles) ? l.circles.slice(0, 600).filter(function (c) { return c && MRE.test(c.m); }).map(function (c) { return { m: c.m, done: !!c.done }; }) : [];
+      out.loans.push({ id: id, name: String(l.name || '').slice(0, 20) || '貸款', pay: amt(l.pay), circles: cs, fold: !!l.fold });
+    });
+    return out;
+  }
+  function load() { try { var raw = localStorage.getItem(KEY); if (raw) { var p = parseData(JSON.parse(raw)); if (p) data = p; } } catch (e) {} }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(data)); saveFailed = false; } catch (e) { saveFailed = true; } $('saveNote').hidden = !saveFailed; }
+  function mLabel(m) { var p = m.split('-'); return Number(p[1]) + ' 月'; }
+  function yLabel(m) { return m.split('-')[0]; }
+
+  $('hideDoneBtn').addEventListener('click', function () { data.hideDone = !data.hideDone; save(); render(); });
+  var undo = null, undoTimer = null, rmAsk = null;     // 移除圈圈先確認；刪除後 10 秒內可復原
+  function undoBar() {
+    var b = el('div', 'undo-bar'); b.setAttribute('role', 'status'); b.appendChild(el('span', '', undo.text));
+    var bt = el('button', 'btn ghost small', '復原'); bt.type = 'button'; bt.addEventListener('click', doUndo); b.appendChild(bt); return b;
+  }
+  function showUndo(u) { clearTimeout(undoTimer); undo = u; undoTimer = setTimeout(function () { undo = null; render(); }, 10000); render(); }
+  function doUndo() {
+    var u = undo; if (!u) return; clearTimeout(undoTimer); undo = null;
+    if (u.kind === 'loan') { data.loans.splice(Math.min(u.idx, data.loans.length), 0, u.loan); }
+    else { var l = data.loans.filter(function (x) { return x.id === u.id; })[0]; if (l) { l.circles.push(u.circle); if (typeof recalc === 'function') recalc(l); } }
+    save(); render();
+  }
+  function askRm(l) {
+    var c = l.circles[l.circles.length - 1]; if (!c) return;
+    rmAsk = l; $('rmInfo').textContent = yLabel(c.m) + ' 年 ' + mLabel(c.m) + (c.done ? '（已蓋章）' : '（還沒蓋章）');
+    openDlg($('rmDlg'));
+  }
+  function render() {
+    var box = $('loans'); box.textContent = '';
+    if (undo && undo.kind === 'loan') box.appendChild(undoBar());
+    var totalDone = 0, totalPaid = 0, totalLeft = 0;
+    if (!data.loans.length) box.appendChild(el('p', 'empty-s', '還沒有貸款。在上面填入名稱和每月金額，就能開始集點。'));
+    var doneCount = 0;
+    data.loans.forEach(function (l) { var d0 = l.circles.filter(function (c) { return c.done; }).length; if (l.circles.length > 0 && d0 === l.circles.length) doneCount++; });
+    $('doneBar').hidden = !doneCount;
+    $('hideDoneBtn').textContent = data.hideDone ? '顯示已繳完的貸款（' + doneCount + '）' : '隱藏已繳完的貸款（' + doneCount + '）';
+    $('hideDoneBtn').setAttribute('aria-pressed', data.hideDone ? 'true' : 'false');
+    data.loans.forEach(function (l) {
+      var done = l.circles.filter(function (c) { return c.done; }).length, total = l.circles.length;
+      totalDone += done; totalPaid += done * l.pay; totalLeft += (total - done) * l.pay;
+      var isDone = total > 0 && done === total;
+      if (isDone && data.hideDone) return;
+      var card = el('div', 'card loan');
+      var head = el('div', 'loan-head'), t = el('div', '');
+      t.appendChild(el('h3', '', l.name)); t.appendChild(el('div', 'pay', '每月 ' + money(l.pay)));
+      var btns = el('div', 'loan-btns');
+      var eb = el('button', 'btn ghost small', editing[l.id] ? '完成' : '編輯'); eb.type = 'button';
+      eb.addEventListener('click', function () { editing[l.id] = !editing[l.id]; if (editing[l.id]) l.fold = false; delete delAsk[l.id]; save(); render(); });
+      if (isDone && !editing[l.id]) {
+        var fb = el('button', 'btn ghost small', l.fold ? '展開' : '收起'); fb.type = 'button'; fb.setAttribute('aria-expanded', l.fold ? 'false' : 'true');
+        fb.addEventListener('click', function () { l.fold = !l.fold; save(); render(); });
+        btns.appendChild(fb);
+      }
+      btns.appendChild(eb); head.appendChild(t); head.appendChild(btns); card.appendChild(head);
+      var body = el('div', 'loan-body');
+      if (isDone && l.fold && !editing[l.id]) {
+        body.appendChild(el('p', 'loan-done', '🎉 已全部繳完 · 共 ' + total + ' 期 · 已繳 ' + money(done * l.pay)));
+        card.appendChild(body); box.appendChild(card); return;
+      }
+      if (editing[l.id]) {
+        var er = el('div', 'edit-row');
+        var f1 = el('div', 'field'), l1 = el('label', '', '名稱'), i1 = document.createElement('input'); i1.type = 'text'; i1.maxLength = 20; i1.value = l.name; f1.appendChild(l1); f1.appendChild(i1);
+        var f2 = el('div', 'field'), l2 = el('label', '', '每月金額'), i2 = document.createElement('input'); i2.type = 'text'; i2.inputMode = 'numeric'; i2.value = l.pay ? l.pay.toLocaleString('en-US') : ''; f2.appendChild(l2); f2.appendChild(i2);
+        i1.addEventListener('input', function () { l.name = i1.value.slice(0, 20) || '貸款'; save(); });
+        i2.addEventListener('input', function () { var dg = dig(i2.value).slice(0, 9); i2.value = dg ? Number(dg).toLocaleString('en-US') : ''; l.pay = dg ? Number(dg) : 0; save(); });
+        i1.addEventListener('change', render); i2.addEventListener('change', render);
+        er.appendChild(f1); er.appendChild(f2); body.appendChild(er);
+      }
+      var st = el('div', 'stamps');
+      l.circles.forEach(function (c, i) {
+        var b = el('button', 'stamp' + (c.done ? ' done' : '')); b.type = 'button'; b.setAttribute('aria-pressed', c.done ? 'true' : 'false'); b.setAttribute('aria-label', yLabel(c.m) + ' 年 ' + mLabel(c.m) + (c.done ? ' 已繳' : ' 未繳'));
+        b.appendChild(el('span', 'dot', c.done ? '✓' : '')); b.appendChild(el('span', '', (i === 0 || c.m.slice(5) === '01') ? yLabel(c.m).slice(2) + '/' + mLabel(c.m) : mLabel(c.m)));
+        b.addEventListener('click', function () { c.done = !c.done; save(); render(); });
+        st.appendChild(b);
+      });
+      function addMonths(n) {
+        n = Math.max(1, Math.min(600 - l.circles.length, n)); if (l.circles.length >= 600) return;
+        var last = l.circles.length ? l.circles[l.circles.length - 1].m : shiftMonth(todayISO().slice(0, 7), -1);
+        for (var k = 1; k <= n; k++) l.circles.push({ m: shiftMonth(last, k), done: false });
+        save(); render();
+      }
+      var ab = el('button', 'stamp add'); ab.type = 'button'; ab.setAttribute('aria-label', '新增月份的圈圈'); ab.setAttribute('aria-expanded', addOpen[l.id] ? 'true' : 'false');
+      ab.appendChild(el('span', 'dot', addOpen[l.id] ? '×' : '+')); ab.appendChild(el('span', '', addOpen[l.id] ? '取消' : '新增月份'));
+      ab.addEventListener('click', function () { addOpen[l.id] = !addOpen[l.id]; render(); });
+      st.appendChild(ab); body.appendChild(st);
+      if (addOpen[l.id]) {
+        var ap = el('div', 'add-months');
+        ap.appendChild(el('span', '', '一次新增'));
+        var ni = document.createElement('input'); ni.type = 'number'; ni.min = '1'; ni.max = '600'; ni.placeholder = '月數'; ni.setAttribute('aria-label', '要新增幾個月');
+        ap.appendChild(ni); ap.appendChild(el('span', '', '個月'));
+        var ok = el('button', 'btn small', '新增'); ok.type = 'button';
+        ok.addEventListener('click', function () { var n = parseInt(ni.value, 10); if (!n || n < 1) { ni.focus(); return; } addMonths(n); });
+        ni.addEventListener('keydown', function (e) { if (e.key === 'Enter') ok.click(); });
+        ap.appendChild(ok);
+        [3, 6, 12, 24].forEach(function (n) { var q = el('button', 'btn ghost small', '+' + n); q.type = 'button'; q.setAttribute('aria-label', '新增 ' + n + ' 個月'); q.addEventListener('click', function () { addMonths(n); }); ap.appendChild(q); });
+        body.appendChild(ap);
+      }
+      var bar = el('div', 'loan-bar'), bi = document.createElement('i'); bi.style.width = (total ? done * 100 / total : 0) + '%'; bar.appendChild(bi); body.appendChild(bar);
+      var sum = el('div', 'loan-sum');
+      var s1 = el('span', '', '已繳 '); s1.appendChild(el('strong', '', done + ' / ' + total + ' 期'));
+      var s2 = el('span', '', '已繳金額 '); s2.appendChild(el('strong', '', money(done * l.pay)));
+      var s3 = el('span', '', '尚未繳 '); s3.appendChild(el('strong', '', money((total - done) * l.pay)));
+      sum.appendChild(s1); sum.appendChild(s2); sum.appendChild(s3); body.appendChild(sum);
+      if (total > 0 && done === total) body.appendChild(el('p', 'loan-done', '🎉 圈圈全部集滿了！'));
+      if (editing[l.id]) {
+        var row = el('div', 'loan-btns'); row.style.marginTop = '14px';
+        var rm = el('button', 'btn ghost small', '移除最後一個圈圈'); rm.type = 'button'; rm.disabled = !total;
+        rm.addEventListener('click', function () { askRm(l); });
+        var dl = el('button', 'btn danger small', delAsk[l.id] ? '再按一次確認刪除' : '刪除這筆貸款'); dl.type = 'button';
+        dl.addEventListener('click', function () {
+          if (!delAsk[l.id]) { delAsk[l.id] = true; render(); return; }
+          var li = data.loans.indexOf(l); data.loans = data.loans.filter(function (x) { return x.id !== l.id; }); delete editing[l.id]; delete delAsk[l.id]; save();
+          showUndo({ kind: 'loan', loan: l, idx: li, text: '已刪除「' + l.name + '」' });
+        });
+        row.appendChild(rm); row.appendChild(dl); body.appendChild(row);
+      }
+      if (undo && undo.kind === 'circle' && undo.id === l.id) body.appendChild(undoBar());
+      card.appendChild(body); box.appendChild(card);
+    });
+    $('sumDone').textContent = totalDone + ' 期'; $('sumPaid').textContent = money(totalPaid); $('sumLeft').textContent = money(totalLeft);
+  }
+
+  $('nPay').addEventListener('input', function () { var dg = dig(this.value).slice(0, 9); this.value = dg ? Number(dg).toLocaleString('en-US') : ''; });
+  $('addLoan').addEventListener('click', function () {
+    var name = $('nName').value.trim().slice(0, 20), pay = amt(dig($('nPay').value));
+    var sm = $('nStart').value, n = Math.max(1, Math.min(600, parseInt($('nCount').value, 10) || 1));
+    if (!name) { $('addErr').textContent = '請輸入貸款名稱。'; return; }
+    if (!pay) { $('addErr').textContent = '請輸入每月金額。'; return; }
+    if (!MRE.test(sm)) sm = todayISO().slice(0, 7);
+    if (data.loans.length >= 30) { $('addErr').textContent = '最多 30 筆貸款。'; return; }
+    $('addErr').textContent = '';
+    var cs = []; for (var i = 0; i < n; i++) cs.push({ m: shiftMonth(sm, i), done: false });
+    data.loans.push({ id: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), name: name, pay: pay, circles: cs });
+    save(); $('nName').value = ''; $('nPay').value = ''; $('nCount').value = ''; render();
+  });
+
+  function openDlg(d) { try { if (typeof d.showModal === 'function') { d.showModal(); return; } } catch (e) {} d.setAttribute('open', ''); d.classList.add('dlg-fallback'); }
+  function closeDlg(d) { try { if (typeof d.close === 'function') { d.close(); return; } } catch (e) {} d.removeAttribute('open'); d.classList.remove('dlg-fallback'); }
+  var inFrame = false; try { inFrame = window.self !== window.top; } catch (e) { inFrame = true; }
+  if (inFrame) $('expDl').hidden = true;
+  $('expBtn').addEventListener('click', function () { $('expText').value = JSON.stringify(data); openDlg($('expDlg')); });
+  $('expClose').addEventListener('click', function () { closeDlg($('expDlg')); });
+  $('expCopy').addEventListener('click', function () {
+    var ta = $('expText'), b = $('expCopy');
+    function done() { b.textContent = '已複製'; setTimeout(function () { b.textContent = '複製'; }, 1500); }
+    function fallback() { ta.focus(); ta.select(); try { if (document.execCommand('copy')) done(); } catch (e) {} }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, fallback); else fallback();
+  });
+  $('expDl').addEventListener('click', function () {
+    try { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([$('expText').value], { type: 'application/json' })); a.download = '貸款繳納進度備份_' + todayISO() + '.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); } catch (e) {}
+  });
+  $('impBtn').addEventListener('click', function () { $('impText').value = ''; $('impFile').value = ''; $('impErr').textContent = ''; openDlg($('impDlg')); });
+  $('impCancel').addEventListener('click', function () { closeDlg($('impDlg')); });
+  $('impFile').addEventListener('change', function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    var r = new FileReader(); r.onload = function () { $('impText').value = String(r.result || ''); }; r.readAsText(f);
+  });
+  $('impOk').addEventListener('click', function () {
+    var txt = $('impText').value.trim(); if (!txt) { $('impErr').textContent = '請選擇備份檔，或貼上備份文字。'; return; }
+    var p = null; try { p = parseData(JSON.parse(txt)); } catch (e) {}
+    if (!p) { $('impErr').textContent = '這不是有效的備份內容，請確認有複製完整。'; return; }
+    data = p; editing = {}; delAsk = {}; save(); closeDlg($('impDlg')); render();
+  });
+
+  $('rmCancel').addEventListener('click', function () { rmAsk = null; closeDlg($('rmDlg')); });
+  $('rmOk').addEventListener('click', function () {
+    var l = rmAsk; rmAsk = null; closeDlg($('rmDlg')); if (!l || !l.circles.length) return;
+    var c = l.circles.pop(); if (typeof recalc === 'function') recalc(l); save();
+    showUndo({ kind: 'circle', id: l.id, circle: c, text: '已移除 ' + yLabel(c.m).slice(2) + '/' + mLabel(c.m) + ' 的圈圈' });
+  });
+  load();
+  $('nStart').value = todayISO().slice(0, 7);
+  render();
+})();
+</script>
+</body>
+</html>

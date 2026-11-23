@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>預算規劃</title>
+<style>
+  /* 版面：同「物品庫存與採購預算」——深綠標題區、數字卡片、可收合清單、手機版卡片化 */
+  :root {
+    --green: #385749; --ink: #293831; --bg: #F7F5EF; --card: #FFFEFA; --line: #D3DDD3;
+    --tint: #E8EEE5; --muted: #5f6f66; --warn: #b3261e; --amber: #8a5a00;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; font-size: 16px; line-height: 1.6; }
+  .hero { background: #234838; color: #fff; padding-block: 30px 26px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .hero-in { max-width: 960px; margin: 0 auto; }
+  .hero-in { text-align: center; }
+  .hero h1 { margin: 0 0 6px; font-size: 1.6rem; text-wrap: balance; }
+  .hero p { margin: 0; color: #dbe7de; text-wrap: balance; }
+  .wrap { max-width: 960px; margin: 0 auto; padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+  .card.tint { background: var(--tint); border-color: transparent; }
+  .label { font-size: .92rem; color: var(--muted); }
+  .value { font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.3; overflow-wrap: anywhere; }
+  .value.neg { color: var(--warn); }
+  .sub { font-size: .85rem; color: var(--muted); }
+  button, input, select { font: inherit; }
+  input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); min-height: 44px; }
+  input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .btn { padding: 10px 16px; border-radius: 10px; border: 1px solid var(--green); background: var(--green); color: #fff; font-weight: 600; cursor: pointer; min-height: 44px; }
+  .btn.ghost { background: #fff; color: var(--green); border-color: var(--line); }
+  .btn.danger { background: #fff; color: var(--warn); border-color: #e3c3c0; }
+  .btn.small { white-space: nowrap; flex: none; padding: 6px 12px; min-height: 36px; font-size: .92rem; }
+  .btn:disabled { opacity: .55; cursor: default; }
+
+  .monthbar { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 14px; }
+  .monthbar .m { min-width: 9.5em; text-align: center; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .monthbar .btn { padding: 8px 14px; }
+
+  .income-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-bottom: 12px; }
+  .income-row.has-total { grid-template-columns: minmax(0, 5fr) minmax(0, 2fr); }
+  .merged-card { padding: 0; overflow: hidden; }
+  .src-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; background: var(--tint); }
+  .src-head { flex-wrap: wrap; }
+  .src-btns { display: flex; gap: 8px; }
+  .src-head .label { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+  .src-list { display: grid; gap: 8px; margin-bottom: 8px; }
+  .src-item { display: flex; gap: 8px; align-items: center; }
+  .src-item input { flex: 1 1 auto; min-width: 0; }
+  .slots { display: flex; flex-wrap: wrap; gap: 10px; padding: 12px 14px 14px; }
+  #slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  #slots .slot { flex: none; }
+  .slot { border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: var(--card); min-width: 0; flex: 1 1 140px; }
+  .slot:focus-within { border-color: var(--green); }
+  .slot select { min-height: 36px; padding: 4px 8px; border: 0; border-radius: 999px; background: var(--tint); color: var(--green); font-weight: 600; font-size: .95rem; }
+  .slot .amt { display: flex; align-items: baseline; gap: 4px; }
+  .slot .amt span { font-weight: 700; color: var(--muted); }
+  .slot .amt input { min-height: 36px; padding: 4px 0; border: 0; border-radius: 0; background: transparent; outline: none; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 0; }
+  .plans-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; }
+  .plans-head .label { font-weight: 700; color: var(--ink); font-size: 1.05rem; }
+  .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .plan { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; cursor: pointer; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .plan:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .plan[aria-checked="true"] { background: var(--tint); border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+  .plan .ratio { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .plan .cust { display: flex; align-items: center; gap: 4px; }
+  .plan .cust input { min-height: 36px; padding: 4px 2px; text-align: center; font-weight: 700; font-size: 1.05rem; min-width: 0; border-radius: 8px; }
+  .plan .pct { font-size: .85rem; color: var(--muted); }
+  .plan .row { display: flex; justify-content: space-between; gap: 6px; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .plan .row span:first-child { color: var(--muted); }
+  .buckets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 12px 0 6px; }
+  .bucket { padding: 12px 14px; }
+  .bk-name { font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .bk-name::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+  .bk-link { font: inherit; font-weight: 700; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 4px; }
+  .bk-link::after { content: " ↓"; font-weight: 400; color: var(--muted); }
+  .bk-link:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 4px; }
+  @keyframes flashCard { from { box-shadow: 0 0 0 3px var(--green); } to { box-shadow: 0 0 0 3px transparent; } }
+  .flash { animation: flashCard 1.4s ease-out; }
+  @media (prefers-reduced-motion: reduce) { .flash { animation: none; box-shadow: 0 0 0 3px var(--green); } }
+  .bk-val { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 4px; overflow-wrap: anywhere; }
+  .bk-val small { font-size: .85rem; font-weight: 400; color: var(--muted); }
+  .bk-bar { height: 8px; border-radius: 999px; background: var(--tint); overflow: hidden; margin: 8px 0 6px; }
+  .bk-bar i { display: block; height: 100%; width: 0; background: var(--c); border-radius: 999px; transition: width .4s ease; }
+  .bk-edit { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .bk-edit[hidden] { display: none; }
+  .bk-edit span { font-weight: 700; color: var(--muted); }
+  .bk-edit input { width: 8em; min-height: 36px; padding: 4px 10px; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .bk-edit small { color: var(--muted); }
+  .bk-name small { margin-left: 6px; font-weight: 600; color: var(--muted); }
+  .bucket.over .bk-bar i { background: var(--warn); }
+  .bucket.over .bk-sub { color: var(--warn); }
+  .bk-sub { font-size: .88rem; color: var(--muted); }
+  .guide-box { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--green); border-radius: 14px; padding: 14px 16px 12px; margin-bottom: 14px; }
+  .guide-box[hidden] { display: none; }
+  .guide-box h2 { margin: 0 0 8px; font-size: 1.05rem; }
+  .guide-box ol { margin: 0 0 8px; padding-left: 1.4em; }
+  .guide-box li { margin: 2px 0; }
+  .guide-box p { margin: 0; color: var(--muted); font-size: .95rem; }
+  .guide-act { display: flex; justify-content: flex-end; margin-top: 10px; }
+  .over-txt { color: var(--warn); font-weight: 700; }
+  .undo-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 8px; padding: 8px 12px; border-radius: 10px; background: var(--tint); font-size: .95rem; }
+  .undo-bar[hidden] { display: none; }
+  .undo-bar.in-card { margin: 0 14px 14px; }
+  .undo-bar span { min-width: 0; overflow-wrap: anywhere; }
+  .plan { text-align: center; }
+  .plan-custom { display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .rand-tag { font-size: .8rem; color: var(--muted); margin-bottom: 4px; }
+  .bk-note { margin: 0 0 14px; font-size: .85rem; color: var(--muted); }
+  .slots.rows { flex-direction: column; flex-wrap: nowrap; gap: 0; padding: 4px 14px 0; }
+  .rows .slot { flex: none; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; padding: 10px 0; }
+  .rows .slot select { flex: 0 1 46%; min-width: 0; }
+  .rows .slot .amt { flex: 1 1 auto; justify-content: flex-end; min-width: 0; }
+  .rows .slot .amt span { margin-left: auto; }
+  .rows .slot .amt input { text-align: right; flex: 0 1 8.5em; width: 8.5em; min-width: 0; }
+  .extra-wrap { padding: 8px 14px 0; display: flex; flex-direction: column; gap: 8px; }
+  .extra-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .extra-row .ex-name { flex: 1 1 40%; min-width: 0; min-height: 36px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--ink); font-size: .95rem; }
+  .extra-row .amt { flex: 1 1 40%; min-width: 0; display: flex; align-items: baseline; gap: 4px; justify-content: flex-end; }
+  .extra-row .amt span { font-weight: 700; color: var(--muted); }
+  .extra-row .ex-amt { flex: 1 1 auto; width: 100%; min-width: 0; min-height: 36px; padding: 4px 0; border: 0; background: transparent; outline: none; text-align: right; font-size: 1.1rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ex-del { flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--tint); color: var(--muted); font-size: 1.1rem; cursor: pointer; }
+  .extra-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ex-del { display: none; }
+  .extra-wrap.editing .ex-del { display: inline-block; }
+  #editExtra[aria-pressed="true"] { background: var(--green); color: #fff; border-color: var(--green); }
+  .rows-total { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 14px 14px; font-variant-numeric: tabular-nums; }
+  .rows-total strong { font-size: 1.3rem; }
+  #needPanel .pair, #invPanel .pair, #savPanel .pair { margin-bottom: 0; }
+  .grp-note { margin: 0; padding: 0 14px 14px; text-align: center; color: var(--muted); font-size: .85rem; line-height: 1.5; }
+  .pair .src-head { justify-content: center; }
+  .pair .src-head .label { text-align: center; }
+  .pair .extra-row .ex-name { text-align: center; }
+  .pair .extra-btns { justify-content: center; }
+  .pair .rows-total { justify-content: center; gap: 14px; }
+  #needPanel .panel-head, #invPanel .panel-head, #savPanel .panel-head { justify-content: flex-start; }
+  #needPanel .collapse-btn, #invPanel .collapse-btn, #savPanel .collapse-btn { justify-content: flex-start; }
+  #planPanel .alloc { margin-bottom: 0; }
+  #planPanel .plans { margin-bottom: 12px; }
+  #planPanel .note-s { margin: 0 0 10px; }
+  .alloc-title { font-weight: 700; margin-bottom: 8px; }
+  .alloc-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--tint); gap: 2px; }
+  .alloc-bar i { display: block; height: 100%; min-width: 0; }
+  .alloc-bar i:nth-child(1) { background: #234838; }
+  .alloc-bar i:nth-child(2) { background: #6f8f7c; }
+  .alloc-bar i:nth-child(3) { background: #b9cdbd; }
+  .alloc-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+  .alloc-item .n { font-size: .9rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .alloc-item .n::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+  .alloc-item .v { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .alloc-item .p { font-size: .85rem; color: var(--muted); }
+  .pair { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; align-items: start; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .stat { padding: 12px 14px; }
+  .stat .value { font-size: 1.3rem; }
+  .grid2.one { grid-template-columns: minmax(0, 1fr); }
+  .total-card { background: #234838; border-color: #234838; color: #fff; display: flex; flex-direction: column; justify-content: center; }
+  .total-card .label { color: #dbe7de; }
+  .big-total { margin-top: 10px; text-align: center; align-items: center; padding: 8px 14px; }
+  .big-total .label { font-size: .8rem; }
+  .big-total .value { font-size: 1.3rem; }
+  .big-total .bt-sub { display: none; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+
+  .progress-wrap { margin: 2px 0 12px; }
+  .progress-label { display: flex; justify-content: space-between; gap: 10px; font-size: .92rem; color: var(--muted); margin-bottom: 6px; flex-wrap: wrap; }
+  .progress { height: 12px; border-radius: 999px; background: var(--tint); overflow: hidden; }
+  .progress-fill { height: 100%; width: 0; background: var(--green); border-radius: 999px; }
+  .progress-fill.over { background: var(--warn); }
+
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 14px; overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 12px 16px; background: var(--tint); }
+  .panel-head h2 { margin: 0; font-size: 1.1rem; }
+  .panel-body { padding: 14px 16px; }
+  .collapse-btn { display: inline-flex; align-items: center; gap: 8px; background: none; border: 0; padding: 0; color: var(--ink); cursor: pointer; text-align: left; }
+  .collapse-btn .tog { font-size: .9rem; color: var(--muted); }
+  .panel.collapsed .panel-body { display: none; }
+  .head-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .head-tools select { width: auto; min-width: 8em; }
+
+  .cats { display: grid; gap: 12px; }
+  .cat-row .top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  .cat-row .amt { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .cat-bar { height: 10px; background: var(--tint); border-radius: 999px; overflow: hidden; }
+  .cat-bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
+  .empty { text-align: center; color: var(--muted); padding: 22px 12px; }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: var(--tint); font-weight: 600; font-size: .92rem; padding: 10px 12px; text-align: center; }
+  td { padding: 10px 12px; border-top: 1px solid var(--line); text-align: center; vertical-align: middle; }
+  td.note { text-align: left; overflow-wrap: anywhere; }
+  td.num, th.num { font-variant-numeric: tabular-nums; }
+  .tag { display: inline-block; padding: 1px 10px; border-radius: 999px; background: var(--tint); color: var(--green); font-size: .85rem; font-weight: 600; }
+  .actions { display: flex; gap: 6px; justify-content: center; }
+  .credit { margin: 22px 0 0; text-align: center; font-size: .85rem; color: var(--muted); }
+  .formula { margin: 0 0 12px; color: var(--muted); }
+  .note-s { margin: 0 0 12px; color: var(--muted); font-size: .92rem; }
+
+  dialog { border: 0; border-radius: 16px; padding: 0; width: min(440px, calc(100vw - 32px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; color: var(--ink); background: var(--card); position: fixed; inset: 0; margin: auto; z-index: 1000; }
+  dialog::backdrop { background: rgba(35, 56, 46, .45); }
+  dialog.dlg-fallback { box-shadow: 0 0 0 100vmax rgba(35, 56, 46, .45); }
+  dialog:not([open]) { display: none; }
+  .dlg-body { padding: 18px 18px 6px; }
+  .dlg-body h3 { margin: 0 0 8px; font-size: 1.15rem; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-weight: 600; margin-bottom: 4px; font-size: .95rem; }
+  .err { color: var(--warn); min-height: 1.3em; margin: 0 0 8px; }
+  .dlg-act { display: flex; gap: 10px; justify-content: flex-end; padding: 12px 18px 16px; position: sticky; bottom: 0; background: var(--card); border-top: 1px solid var(--line); }
+  textarea { width: 100%; min-height: 140px; font: .82rem/1.4 ui-monospace, Menlo, Consolas, monospace; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
+
+  @media (max-width: 899px) {
+    #needPanel .panel-body, #invPanel .panel-body, #savPanel .panel-body { padding: 8px; }
+    .pair { gap: 6px; }
+    .pair .src-head { flex-direction: column; align-items: stretch; gap: 6px; padding: 8px; }
+    .pair .src-head .label { font-size: .95rem; text-align: center; }
+    .pair .src-btns { flex-direction: column; gap: 4px; }
+    .pair .src-btns .btn { width: 100%; min-height: 32px; padding: 2px 4px; font-size: .78rem; }
+    .pair .slots.rows { padding: 2px 8px 0; }
+    .pair .rows .slot { flex-direction: column; align-items: stretch; gap: 2px; padding: 8px 0; }
+    .pair .rows .slot select { flex: none; width: 100%; font-size: .78rem; padding: 2px 2px 2px 6px; }
+    .pair .rows .slot .amt { justify-content: flex-end; }
+    .pair .rows .slot .amt span { margin-left: 0; }
+    .pair .rows .slot .amt input { flex: 1 1 auto; width: 100%; font-size: .9rem; }
+    .pair .extra-wrap { padding: 2px 8px 0; }
+    .pair .extra-row { flex-wrap: wrap; gap: 2px; padding: 8px 0; }
+    .pair .extra-row .ex-name { flex: 1 1 100%; font-size: .8rem; padding: 2px 6px; min-height: 32px; }
+    .pair .extra-row .amt { flex: 1 1 0; }
+    .pair .extra-row .ex-amt { font-size: .9rem; }
+    .pair .ex-del { width: 24px; height: 24px; font-size: .9rem; }
+    .pair .extra-btns { flex-direction: column; gap: 4px; }
+    .pair .extra-btns .btn { width: 100%; min-height: 32px; padding: 2px 4px; font-size: .78rem; }
+    .grp-note { padding: 0 8px 10px; font-size: .75rem; }
+    .pair .rows-total { flex-direction: column; align-items: flex-end; gap: 0; padding: 8px; }
+    .pair .rows-total strong { font-size: 1rem; }
+  }
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 1.4rem; }
+    .grid2, .grid3, .income-row { gap: 10px; }
+    .income-row.has-total { grid-template-columns: minmax(0, 1fr); }
+    .buckets { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .alloc-list { gap: 6px; }
+    .alloc-item .v { font-size: 1rem; }
+    .stats, .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .stats > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .stat .value { font-size: 1.2rem; }
+    .grid3 { grid-template-columns: 1fr 1fr; }
+    .grid3 > :last-child { grid-column: 1 / -1; }
+    .value { font-size: 1.4rem; }
+    .slot { flex: 1 1 calc(50% - 5px); }
+    #slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .head-tools { width: 100%; }
+    .head-tools select { flex: 1 1 120px; min-width: 0; }
+    .table-scroll { overflow: visible; }
+    table, tbody, tr, td { display: block; }
+    thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    tbody tr { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+    tbody tr:last-child { margin-bottom: 0; }
+    td { border: 0; padding: 5px 0; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; text-align: right; }
+    td::before { content: attr(data-label); flex: none; color: var(--muted); font-size: .9rem; text-align: left; }
+    td.note { text-align: right; }
+    td.act { display: block; margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+    td.act::before { content: none; }
+    td.act .actions .btn { flex: 1 1 auto; min-height: 40px; }
+    td.empty { display: block; text-align: center; }
+    td.empty::before { content: none; }
+    .dlg-act .btn { flex: 1 1 auto; }
+  }
+  .copy-row { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: -4px 0 14px; }
+  .copy-msg { font-size: .9rem; color: var(--muted); text-align: center; min-height: 1.4em; }
+  /* 網頁選單 */
+  .sitenav { background:#F7F5EF; border-bottom:1px solid #D3DDD3; }
+  .sitenav-in { max-width:520px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding-block:10px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); }
+  .sitenav a { flex:0 0 calc((100% - 24px) / 4); min-width:0; box-sizing:border-box; padding:6px 0; border-radius:999px; border:1px solid #D3DDD3; background:#FFFEFA; color:#385749; font-size:.8rem; font-weight:600; text-decoration:none; white-space:nowrap; line-height:1.5; text-align:center; }
+  @media (max-width:360px) { .sitenav-in { gap:6px; } .sitenav a { flex-basis:calc((100% - 18px) / 4); font-size:.72rem; } }
+  .sitenav a:hover { background:#E8EEE5; }
+  .sitenav a:focus-visible { outline:2px solid #385749; outline-offset:2px; }
+  .sitenav a[aria-current="page"] { background:#385749; border-color:#385749; color:#fff; }
+</style>
+</head>
+<body>
+<header class="hero"><div class="hero-in">
+  <h1>💰 預算規劃</h1>
+  <p>讓每一筆錢到該到的地方，完成任務🌿</p>
+</div></header>
+<noscript><p style="margin:0;padding:12px 16px;background:#FFF4E5;color:#8a5a00;text-align:center;font-size:.95rem;line-height:1.6">這個預覽沒有執行網頁程式，所以日期、按鈕和資料都無法使用。請改用 Safari 或 Chrome 開啟檔案，或使用網路預覽連結。</p></noscript>
+<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html" aria-current="page">預算規劃</a><a href="生活預算.html">生活預算</a><a href="日常花費.html">日常花費</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
+
+<main class="wrap">
+  <section class="guide-box" id="guideBox" hidden aria-labelledby="guideTitle">
+    <h2 id="guideTitle">第一次使用？照這個順序就好</h2>
+    <ol>
+      <li>💰 <b>預算規劃</b>：填這個月收入，選好分配比例</li>
+      <li>🏠 <b>生活預算</b>：把花費分成貸款、生活、家庭、休閒</li>
+      <li>🧾 <b>日常花費</b>：每天記一筆，隨時看還剩多少</li>
+    </ol>
+    <p>想存錢的話，到 🏅 <b>存錢目標</b>，選一種存法開始存</p>
+    <div class="guide-act"><button type="button" class="btn ghost small" id="guideOk">我知道了</button></div>
+  </section>
+  <div class="monthbar">
+    <button class="btn ghost" type="button" id="prevM" aria-label="上個月">‹</button>
+    <div class="m" id="monthLabel" aria-live="polite"></div>
+    <button class="btn ghost" type="button" id="nextM" aria-label="下個月">›</button>
+  </div>
+  <div class="copy-row"><button type="button" class="btn ghost small" id="copyPrev">沿用上個月</button><span class="copy-msg" id="copyMsg" role="status" aria-live="polite"></span></div>
+
+  <p class="err" id="saveNote" role="alert" hidden>這次未能自動儲存，請先在下方「備份與還原」按「備份全部資料」。</p>
+  <div class="income-row has-total">
+    <div class="card merged-card">
+      <div class="src-head">
+        <span class="label">收入來源</span>
+        <span class="src-btns">
+          <button type="button" class="btn ghost small" id="editSrc">編輯選項</button>
+          <button type="button" class="btn ghost small" id="addSrc">+ 新增選項</button>
+        </span>
+      </div>
+      <div class="slots" id="slots"></div>
+      <div class="undo-bar in-card" id="srcUndoBar" role="status" aria-live="polite" hidden><span id="srcUndoText">已刪除</span><button type="button" class="btn ghost small" id="srcUndoBtn">復原</button></div>
+    </div>
+    <div class="card total-card">
+      <div class="label">總收入</div>
+      <div class="value" id="cardTotal">$0</div>
+    </div>
+  </div>
+
+  <section class="panel" id="planPanel">
+    <div class="panel-head">
+      <button type="button" class="collapse-btn" data-target="planPanel" aria-expanded="true"><h2>預算分配</h2><span class="tog">收起</span></button>
+    </div>
+    <div class="panel-body">
+      <p class="note-s">花費 · 投資 · 儲蓄，點一格套用到總收入。</p>
+      <div class="plans" id="plans" role="radiogroup" aria-label="預算分配比例"></div>
+      <div class="card alloc" id="alloc" aria-live="polite">
+        <div class="alloc-title" id="allocTitle"></div>
+        <div class="alloc-bar" id="allocBar"></div>
+        <div class="alloc-list" id="allocList"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="buckets" aria-label="花費、投資、儲蓄使用情形">
+    <div class="card bucket" id="bk0"><div class="bk-name">花費</div><div class="bk-val"></div></div>
+    <div class="card bucket" id="bk1"><div class="bk-name"></div><div class="bk-val"></div></div>
+    <div class="card bucket" id="bk2"><div class="bk-name"></div><div class="bk-val"></div></div>
+  </div>
+  <section class="panel" id="bkPanel">
+    <div class="panel-head">
+      <h2>備份與還原</h2>
+    </div>
+    <div class="panel-body">
+      <p class="note-s">8 頁的記錄都只存在目前使用的瀏覽器，換手機、換電腦、換瀏覽器或清除瀏覽器資料後就看不到了。換之前，先在舊的地方按「備份全部資料」，把 8 頁存成一個檔案；再到新的地方打開這一頁，按「匯入全部資料」。</p>
+      <div class="head-tools">
+        <button type="button" class="btn" id="expBtn">備份全部資料（8 頁）</button>
+        <button type="button" class="btn ghost" id="impBtn">匯入全部資料</button>
+      </div>
+    </div>
+  </section>
+
+  <p class="credit">© 2026 鯊鯊說心事｜IG：鯊鯊說心事</p>
+</main>
+
+<dialog id="srcDlg" aria-labelledby="srcTitle">
+  <form id="srcForm" novalidate>
+    <div class="dlg-body">
+      <h3 id="srcTitle">新增收入來源</h3>
+      <div class="field"><label for="srcName">名稱</label><input id="srcName" type="text" maxlength="12" placeholder="例如 兼職、租金、紅包"></div>
+      <p class="err" id="srcErr" role="alert"></p>
+    </div>
+    <div class="dlg-act"><button type="button" class="btn ghost" id="srcCancel">取消</button><button type="submit" class="btn">加入</button></div>
+  </form>
+</dialog>
+
+<dialog id="srcMgrDlg" aria-labelledby="srcMgrTitle">
+  <div class="dlg-body">
+    <h3 id="srcMgrTitle">編輯收入來源選項</h3>
+    <p class="note-s">直接改名稱，按 Enter 或點其他地方就會儲存。刪除選項時，用到它的格子也會一起刪除，裡面的金額不再計入。</p>
+    <div id="srcList" class="src-list"></div>
+    <p class="err" id="srcMgrErr" role="alert"></p>
+    <div class="undo-bar" id="srcUndoBar2" role="status" aria-live="polite" hidden><span id="srcUndoText2">已刪除</span><button type="button" class="btn ghost small" id="srcUndoBtn2">復原</button></div>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn" id="srcMgrDone">完成</button></div>
+</dialog>
+
+<dialog id="srcDelDlg" aria-labelledby="srcDelTitle">
+  <div class="dlg-body">
+    <h3 id="srcDelTitle">確定要刪除此選項嗎?</h3>
+    <p class="note-s" id="srcDelInfo"></p>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="srcDelCancel">取消</button><button type="button" class="btn danger" id="srcDelOk">刪除</button></div>
+</dialog>
+
+<dialog id="expDlg" aria-labelledby="expTitle">
+  <div class="dlg-body">
+    <h3 id="expTitle">備份全部資料</h3>
+    <p class="note-s">這份備份包含 8 頁的所有資料。按「下載檔案」存起來，或把下面的文字複製到備忘錄、傳給自己。到新的地方打開「預算規劃」，按「匯入全部資料」即可。</p>
+    <textarea id="expText" readonly aria-label="備份內容"></textarea>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="expClose">關閉</button><button type="button" class="btn ghost" id="expDl">下載檔案</button><button type="button" class="btn" id="expCopy">複製</button></div>
+</dialog>
+
+<dialog id="impDlg" aria-labelledby="impTitle">
+  <div class="dlg-body">
+    <h3 id="impTitle">匯入全部資料</h3>
+    <p class="note-s">匯入後，8 頁的資料會整個換成備份檔的內容，這個瀏覽器原本的資料會被清掉。</p>
+    <div class="field"><label for="impFile">選擇備份檔</label><input id="impFile" type="file" accept=".json,.txt,application/json,text/plain"></div>
+    <div class="field"><label for="impText">或貼上備份文字</label><textarea id="impText"></textarea></div>
+    <p class="err" id="impErr" role="alert"></p>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="impCancel">取消</button><button type="button" class="btn" id="impOk">匯入</button></div>
+</dialog>
+
+<script>
+/* 輸入法組字保護：組字中不改寫欄位內容，避免數字重複 */
+(function () {
+  var sel = 'input[inputmode="numeric"],input[inputmode="decimal"]';
+  function isNum(t) { return t && t.matches && t.matches(sel); }
+  document.addEventListener('compositionstart', function (e) { if (isNum(e.target)) e.target._ime = 1; }, true);
+  document.addEventListener('input', function (e) {
+    var t = e.target; if (!isNum(t)) return;
+    if (t._ime || e.isComposing) { e.stopImmediatePropagation(); return; }
+    if (/[０-９．，]/.test(t.value)) t.value = t.value.replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); }).replace(/．/g, '.').replace(/，/g, ',');
+  }, true);
+  document.addEventListener('compositionend', function (e) {
+    var t = e.target; if (!isNum(t) || !t._ime) return;
+    setTimeout(function () { t._ime = 0; t.dispatchEvent(new Event('input', { bubbles: true })); }, 0);
+  }, true);
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+  var KEY = 'household-expense-v1';
+  var CATS = ['餐飲', '日用品', '交通', '房租水電', '醫療', '教育', '娛樂', '其他'];
+  var $ = function (id) { return document.getElementById(id); };
+
+  var DEFAULT_SOURCES = ['薪水', '獎金', '兼職', '其他收入'];
+  var FIXED_DEFAULTS = [];                                   // 固定支出一開始沒有任何選項，只用「+ 新增欄位」
+  var PLAN_NAMES = ['花費', '投資', '儲蓄'];
+  var PRESETS = [{ id: '532', parts: [5, 3, 2] }, { id: '631', parts: [6, 3, 1] }, { id: '333', parts: [3, 3, 3] }];
+  var PRE_DEFAULTS = [];
+  var VAR_DEFAULTS = [];
+  var data = { variable: { sources: VAR_DEFAULTS.slice(), slots: {} }, plan: { mode: '532', custom: [4, 3, 3], amounts: [0, 0, 0], edited: [0, 1] }, version: 2, sources: DEFAULT_SOURCES.slice(), slots: {}, fixed: { sources: FIXED_DEFAULTS.slice(), slots: {} }, prepaid: { sources: PRE_DEFAULTS.slice(), slots: {} }, sav1: { sources: [], slots: {} }, sav2: { sources: [], slots: {} }, sav3: { sources: [], slots: {} }, inv1: { sources: [], slots: {} }, inv2: { sources: [], slots: {} }, inv3: { sources: [], slots: {} }, items: [] };   // slots: { 'YYYY-MM': [ {src:來源, amt:金額} × 4 ] }
+  var MAX_SLOTS = 12;       // 每個月最多幾格
+  var month = '';                                      // 目前查看的月份 YYYY-MM
+  var editingId = null, deletingId = null;
+  var saveFailed = false;
+
+  // ---------- 日期 ----------
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function shiftMonth(m, n) { var p = m.split('-'); var d = new Date(Number(p[0]), Number(p[1]) - 1 + n, 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1); }
+  function monthText(m) { var p = m.split('-'); return p[0] + ' 年 ' + Number(p[1]) + ' 月'; }
+  function isISO(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(new Date(s + 'T00:00:00')); }
+  function round2(n) { return Math.round(n * 100) / 100; }
+  function money(n) { var r = Math.round(n); return (r < 0 ? '-$' : '$') + Math.abs(r).toLocaleString('en-US'); }
+  function dig(v) { return String(v || '').replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); }).replace(/[^\d]/g, ''); }   // 全形數字（注音輸入）也能讀成金額
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  // ---------- 儲存 ----------
+  function parseData(d) {
+    var out = { version: 2, sources: [], slots: {}, items: [] };
+    if (!d || typeof d !== 'object') return null;
+    function addSrc(n) { n = String(n || '').trim().slice(0, 12); if (n && out.sources.indexOf(n) < 0) out.sources.push(n); return n; }
+    if (Array.isArray(d.sources)) d.sources.forEach(addSrc);
+    if (!out.sources.length) out.sources = DEFAULT_SOURCES.slice();
+    function amt(v) { v = Number(v); return isFinite(v) && v >= 0 ? Math.round(v) : 0; }
+    var KEYRE = /^\d{4}-\d{2}$/;
+    if (d.slots && typeof d.slots === 'object') Object.keys(d.slots).forEach(function (k) {
+      if (!KEYRE.test(k) || !Array.isArray(d.slots[k])) return;
+      var arr = [];
+      d.slots[k].slice(0, MAX_SLOTS).forEach(function (x, i) { x = x || {}; var n = addSrc(x.src) || out.sources[i] || out.sources[0]; arr.push({ src: n, amt: amt(x.amt) }); });
+      if (!arr.length) arr.push({ src: out.sources[0], amt: 0 });
+      out.slots[k] = arr;
+    });
+    if (d.incomes && typeof d.incomes === 'object') Object.keys(d.incomes).forEach(function (k) {   // 上一版：每個來源一個金額，轉成四格
+      if (!KEYRE.test(k) || out.slots[k] || !d.incomes[k] || typeof d.incomes[k] !== 'object') return;
+      var names = Object.keys(d.incomes[k]).filter(function (n) { return amt(d.incomes[k][n]) > 0; });
+      var arr = [];
+      names.slice(0, MAX_SLOTS).forEach(function (n) { addSrc(n); arr.push({ src: n, amt: amt(d.incomes[k][n]) }); });
+      if (!arr.length) arr.push({ src: out.sources[0], amt: 0 });
+      out.slots[k] = arr;
+    });
+    if (d.budgets && typeof d.budgets === 'object') Object.keys(d.budgets).forEach(function (k) {   // 舊版：單一金額，放第一格
+      if (!KEYRE.test(k) || out.slots[k]) return;
+      out.slots[k] = [{ src: out.sources[0], amt: amt(d.budgets[k]) }];
+    });
+    Object.keys(out.slots).forEach(function (k) {          // 一個選項一格：重複的格子合併，缺少的格子補上
+      var seenSrc = {}, arr = [];
+      out.slots[k].forEach(function (x) { if (seenSrc[x.src]) seenSrc[x.src].amt += x.amt; else { seenSrc[x.src] = x; arr.push(x); } });
+      out.sources.forEach(function (n) { if (!seenSrc[n] && arr.length < MAX_SLOTS) arr.push({ src: n, amt: 0 }); });
+      out.slots[k] = arr;
+    });
+    function parseFixed(f, defs) {
+      f = f && typeof f === 'object' ? f : {};
+      var o = { sources: [], slots: {} };
+      function addF(n) { n = String(n || '').trim().slice(0, 12); if (n && o.sources.indexOf(n) < 0) o.sources.push(n); return n; }
+      if (Array.isArray(f.sources)) f.sources.forEach(addF);
+      if (!Array.isArray(f.sources)) o.sources = defs.slice();   // 沒存過才用預設；使用者全刪掉就維持空的
+      if (!o.sources.length) return o;
+      if (f.slots && typeof f.slots === 'object') Object.keys(f.slots).forEach(function (k) {
+        if (!KEYRE.test(k) || !Array.isArray(f.slots[k])) return;
+        var arr = [];
+        f.slots[k].slice(0, MAX_SLOTS).forEach(function (x, i) { x = x || {}; arr.push({ src: addF(x.src) || o.sources[i] || o.sources[0], amt: amt(x.amt) }); });
+        var seenS = {}, out2 = [];
+        arr.forEach(function (x) { if (seenS[x.src]) seenS[x.src].amt += x.amt; else { seenS[x.src] = x; out2.push(x); } });
+        o.sources.forEach(function (n) { if (!seenS[n] && out2.length < MAX_SLOTS) out2.push({ src: n, amt: 0 }); });
+        o.slots[k] = out2;
+      });
+      return o;
+    }
+    out.fixed = parseFixed(d.fixed, FIXED_DEFAULTS);
+    out.variable = parseFixed(d.variable, VAR_DEFAULTS);
+    out.prepaid = parseFixed(d.prepaid, PRE_DEFAULTS);
+    out.inv1 = parseFixed(d.inv1, []); out.inv2 = parseFixed(d.inv2, []); out.inv3 = parseFixed(d.inv3, []);
+    out.sav1 = parseFixed(d.sav1, []); out.sav2 = parseFixed(d.sav2, []); out.sav3 = parseFixed(d.sav3, []);
+    var OLD = { fixed: ['房租', '水電瓦斯', '保險', '手機網路'], variable: ['餐飲', '日用品', '交通', '娛樂'], prepaid: ['悠遊卡', '手機預付', '餐券禮券', '其他預存'] };
+    ['fixed', 'variable', 'prepaid', 'inv1', 'inv2', 'inv3', 'sav1', 'sav2', 'sav3'].forEach(function (g) {
+      var og = out[g];
+      if (OLD[g] && og.sources.join('|') === OLD[g].join('|') && Object.keys(og.slots).every(function (k) { return og.slots[k].every(function (x) { return !x.amt; }); })) og = out[g] = { sources: [], slots: {} };   // 舊版預設選項沒填過金額就清掉
+      og.extras = {};
+      var de = d[g] && d[g].extras;
+      if (de && typeof de === 'object') Object.keys(de).forEach(function (k) {
+        if (!KEYRE.test(k) || !Array.isArray(de[k])) return;
+        og.extras[k] = de[k].slice(0, 30).map(function (x) { x = x || {}; return { name: String(x.name || '').slice(0, 20), amt: amt(x.amt) }; });
+      });
+    });
+    out.plan = { mode: '532', custom: [4, 3, 3], amounts: [0, 0, 0], edited: [0, 1] };
+    if (d.plan && typeof d.plan === 'object') {
+      if (['532', '631', '333', 'custom'].indexOf(d.plan.mode) > -1) out.plan.mode = d.plan.mode;
+      if (Array.isArray(d.plan.edited) && d.plan.edited.length === 2 && d.plan.edited[0] !== d.plan.edited[1] && d.plan.edited.every(function (v) { return v === 0 || v === 1 || v === 2; })) out.plan.edited = d.plan.edited.slice();
+      if (Array.isArray(d.plan.amounts) && d.plan.amounts.length === 3) out.plan.amounts = d.plan.amounts.map(function (v) { v = Number(v); return isFinite(v) && v >= 0 ? Math.min(Math.round(v), 999999999) : 0; });
+      if (Array.isArray(d.plan.custom) && d.plan.custom.length === 3) {
+        var cu = d.plan.custom.map(function (v) { v = Number(v); return isFinite(v) && v >= 0 ? Math.min(v, 999) : 0; });
+        if (cu[0] + cu[1] + cu[2] > 0) out.plan.custom = cu;
+      }
+    }
+    if (!Array.isArray(d.items)) return null;
+    var seen = {};
+    d.items.forEach(function (it) {
+      if (!it || !isISO(it.date)) return;
+      var a = Number(it.amount); if (!isFinite(a) || a <= 0) return;
+      var id = String(it.id || ''); if (!id || seen[id]) id = 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      seen[id] = 1;
+      out.items.push({ id: id, date: it.date, cat: CATS.indexOf(it.cat) > -1 ? it.cat : '其他', amount: round2(a), note: String(it.note || '').slice(0, 40) });
+    });
+    return out;
+  }
+  function load() {
+    try { var raw = localStorage.getItem(KEY); if (raw) { var p = parseData(JSON.parse(raw)); if (p) data = p; } } catch (e) {}
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(data)); if (saveFailed) { saveFailed = false; } }
+    catch (e) { saveFailed = true; }
+    $('saveNote') && ($('saveNote').hidden = !saveFailed);
+  }
+
+  // ---------- 預算：沒設定的月份沿用最近一個月的預算 ----------
+  // 收入來源（g = 'income'）與固定支出（g = 'fixed'）共用同一套「選項＋格子」
+  var GROUPS = ['fixed', 'variable', 'prepaid', 'inv1', 'inv2', 'inv3', 'sav1', 'sav2', 'sav3'];
+  var GNAME = { fixed: '固定支出', variable: '變動支出', prepaid: '預存基金', inv1: '定期投資', inv2: '單筆投資', inv3: '自我投資', sav1: '緊急預備金', sav2: '定存零存', sav3: '目標儲蓄', income: '收入來源' };
+  var GBOX = { fixed: ['fslots', 'fSlot'], variable: ['vslots', 'vSlot'], prepaid: ['pslots', 'pSlot'], inv1: ['i1slots', 'i1Slot'], inv2: ['i2slots', 'i2Slot'], inv3: ['i3slots', 'i3Slot'], sav1: ['s1slots', 's1Slot'], sav2: ['s2slots', 's2Slot'], sav3: ['s3slots', 's3Slot'], income: ['slots', 'slot'] };
+  function gStore(g) { return g === 'income' ? data : data[g]; }                 // .sources / .slots
+  function gIds(g) { var x = GBOX[g]; return { box: x[0], sel: x[1] + 'Sel', amt: x[1] + 'Amt' }; }
+  function gName(g) { return GNAME[g]; }
+  function emptySlots(g) { return gStore(g).sources.slice(0, MAX_SLOTS).map(function (n) { return { src: n, amt: 0 }; }); }
+  function slotsOf(g, m) {                               // 這個月沒填過時，沿用前一個有填的月份
+    var st = gStore(g);
+    if (st.slots[m]) return st.slots[m];
+    var best = null;
+    Object.keys(st.slots).forEach(function (k) { if (k < m && (best === null || k > best)) best = k; });
+    return best === null ? emptySlots(g) : JSON.parse(JSON.stringify(st.slots[best]));
+  }
+  function extrasOf(g, m) {                              // 支出下方自行新增的「項目＋金額」，沒填過的月份沿用前一個月
+    var st = gStore(g), ex = st.extras || (st.extras = {});
+    if (ex[m]) return ex[m];
+    var best = null; Object.keys(ex).forEach(function (k) { if (k < m && (best === null || k > best)) best = k; });
+    return best === null ? [] : JSON.parse(JSON.stringify(ex[best]));
+  }
+  function ownExtras(g) { var st = gStore(g), ex = st.extras || (st.extras = {}); if (!ex[month]) ex[month] = JSON.parse(JSON.stringify(extrasOf(g, month))); return ex[month]; }
+  function totalOf(g, m) { var t = 0; slotsOf(g, m).forEach(function (x) { t += x.amt; }); if (g !== 'income') extrasOf(g, m).forEach(function (x) { t += x.amt; }); return t; }
+  function ownSlots(g) { var st = gStore(g); if (!st.slots[month]) st.slots[month] = JSON.parse(JSON.stringify(slotsOf(g, month))); return st.slots[month]; }
+  function buildSlots(g) {
+    var ids = gIds(g), box = $(ids.box); box.textContent = '';
+    var n = slotsOf(g, month).length;
+    for (var i = 0; i < n; i++) (function (i) {
+      var w = el('div', 'slot');
+      var sel = document.createElement('select'); sel.id = ids.sel + i; sel.setAttribute('aria-label', gName(g) + ' ' + (i + 1));
+      var amtBox = el('div', 'amt'); amtBox.appendChild(el('span', '', '$'));
+      var inp = document.createElement('input'); inp.id = ids.amt + i; inp.type = 'text'; inp.inputMode = 'numeric'; inp.autocomplete = 'off'; inp.placeholder = '0'; inp.setAttribute('aria-label', '金額 ' + (i + 1));
+      amtBox.appendChild(inp); w.appendChild(sel); w.appendChild(amtBox); box.appendChild(w);
+      sel.addEventListener('change', function () {
+        var arr = ownSlots(g), old = arr[i].src;
+        arr.forEach(function (x, j) { if (j !== i && x.src === sel.value) x.src = old; });   // 選到別格已用的選項：兩格互換
+        arr[i].src = sel.value; save(); fillSources(g); render();
+      });
+      inp.addEventListener('input', function () {
+        var digits = dig(inp.value).slice(0, 9);
+        inp.value = digits ? Number(digits).toLocaleString('en-US') : '';
+        ownSlots(g)[i].amt = digits ? Number(digits) : 0; save(); render();
+      });
+    })(i);
+    fillSources(g);
+  }
+  function fillSources(g) {                              // 更新下拉選單的選項與目前選取
+    var ids = gIds(g), sl = slotsOf(g, month);
+    for (var i = 0; i < sl.length; i++) {
+      var sel = $(ids.sel + i); if (!sel) continue; sel.textContent = '';
+      var taken = {}; sl.forEach(function (x, j) { if (j !== i) taken[x.src] = true; });   // 別格已用的選項不再出現
+      gStore(g).sources.forEach(function (n) { if (taken[n]) return; var o = el('option', '', n); o.value = n; sel.appendChild(o); });
+      sel.value = sl[i].src;
+    }
+  }
+  function syncSlots(g) {                                // 畫面跟資料對齊（格數變了就重建）
+    var ids = gIds(g), sl = slotsOf(g, month);
+    if ($(ids.box).children.length !== sl.length) buildSlots(g);
+    for (var i = 0; i < sl.length; i++) {
+      if ($(ids.sel + i).value !== sl[i].src) $(ids.sel + i).value = sl[i].src;
+      if (document.activeElement !== $(ids.amt + i)) $(ids.amt + i).value = sl[i].amt ? sl[i].amt.toLocaleString('en-US') : '';
+    }
+  }
+  // ---------- 預算分配（532／631／333／自訂） ----------
+  function planParts(id) { if (id === 'custom') return data.plan.amounts; for (var i = 0; i < PRESETS.length; i++) if (PRESETS[i].id === id) return PRESETS[i].parts; return [5, 3, 2]; }
+  function autoIdx() { var e = data.plan.edited || [0, 1]; for (var i = 0; i < 3; i++) if (e.indexOf(i) < 0) return i; return 2; }
+  function applyCustom(b) {                            // 自訂：花費＋投資＋儲蓄＝總收入，沒被改到的那一格自動補
+    if (data.plan.mode !== 'custom' || b <= 0) return;
+    var a = autoIdx(), others = 0; for (var i = 0; i < 3; i++) if (i !== a) others += data.plan.amounts[i];
+    data.plan.amounts[a] = Math.max(0, Math.round(b - others));
+  }
+  function initBkEdit() {                              // 自訂時，三格的目標金額可直接改
+    for (var j = 0; j < 3; j++) (function (j) {
+      var box = $('bk' + j), ed = el('div', 'bk-edit'); ed.hidden = true;
+      ed.appendChild(el('span', '', '目標 $'));
+      var ai = document.createElement('input'); ai.type = 'text'; ai.inputMode = 'numeric'; ai.autocomplete = 'off'; ai.placeholder = '0'; ai.setAttribute('aria-label', PLAN_NAMES[j] + ' 目標金額');
+      ai.addEventListener('input', function () {
+        var dg = dig(ai.value).slice(0, 9); ai.value = dg ? Number(dg).toLocaleString('en-US') : '';
+        data.plan.amounts[j] = dg ? Number(dg) : 0;
+        var e = (data.plan.edited || [0, 1]).filter(function (v) { return v !== j; }); e.push(j); data.plan.edited = e.slice(-2);
+        applyCustom(totalOf('income', month)); save(); render();
+      });
+      ed.appendChild(ai); ed.appendChild(el('small', '', ''));
+      box.appendChild(ed);
+    })(j);
+  }
+  function pickCustom() {                              // 切到自訂：金額欄位先帶入目前比例算出的金額，之後可自由改
+    if (data.plan.mode === 'custom') return;
+    var b = totalOf('income', month), parts = planParts(data.plan.mode), sum = parts[0] + parts[1] + parts[2] || 1;
+    if (b > 0) data.plan.amounts = parts.map(function (x) { return Math.round(b * x / sum); });
+    data.plan.edited = [0, 1]; data.plan.mode = 'custom'; applyCustom(b); save(); render();
+  }
+  function buildPlans() {
+    var box = $('plans'); box.textContent = '';
+    PRESETS.concat([{ id: 'custom' }]).forEach(function (pr) {
+      var d = el('div', 'plan'); d.id = 'plan-' + pr.id; d.setAttribute('role', 'radio'); d.tabIndex = 0;
+      if (pr.id === 'custom') {
+        d.setAttribute('aria-label', '自訂');
+        d.classList.add('plan-custom'); d.appendChild(el('div', 'ratio', '自訂'));
+      } else {
+        d.appendChild(el('div', 'ratio', pr.parts.join(' : ')));
+      }
+      if (pr.id === 'custom') { d.setAttribute('role', 'radio'); box.appendChild(d); d.addEventListener('click', pickCustom); d.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target === d) { e.preventDefault(); pickCustom(); } }); return; }
+      d.appendChild(el('div', 'pct'));
+      function pick() {
+        if (data.plan.mode !== pr.id) { data.plan.mode = pr.id; save(); render(); }
+      }
+      d.addEventListener('click', pick);
+      d.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target === d) { e.preventDefault(); pick(); } });
+      box.appendChild(d);
+    });
+  }
+  function renderAlloc(b) {                               // 目前選的比例（或自訂金額）套用到總收入的結果
+    var custom = data.plan.mode === 'custom';
+    var parts = planParts(data.plan.mode), sum = parts[0] + parts[1] + parts[2];
+    var amts = parts.map(function (x) { return custom ? x : (sum ? b * x / sum : 0); });
+    var tot = amts[0] + amts[1] + amts[2];
+    if (custom) {
+      var at = $('allocTitle'); at.textContent = b > 0 ? '自訂分配 ' + money(tot) + ' / 總收入 ' + money(b) : '填入收入來源後，會自動算出分配';
+      if (b > 0 && tot > b) { at.appendChild(document.createTextNode('（')); at.appendChild(el('span', 'over-txt', '超出 ' + money(tot - b))); at.appendChild(document.createTextNode('）')); }
+      else if (b > 0 && tot < b) at.appendChild(document.createTextNode('（還沒分配 ' + money(b - tot) + '）'));
+    } else {
+      $('allocTitle').textContent = b > 0 ? '總收入 ' + money(b) + '，依 ' + parts.join(' : ') + ' 分配' : '填入收入來源後，會自動算出分配';
+    }
+    var cols = ['#234838', '#6f8f7c', '#b9cdbd'], bar = $('allocBar'), list = $('allocList');
+    bar.textContent = ''; list.textContent = '';
+    var base = custom ? Math.max(b, tot) : sum;
+    for (var j = 0; j < 3; j++) {
+      var seg = document.createElement('i'); seg.style.flex = String(custom ? (base > 0 ? amts[j] : 0) : (b > 0 ? parts[j] : 0)) + ' 1 0'; seg.style.background = cols[j]; bar.appendChild(seg);
+      var it = el('div', 'alloc-item'); it.style.setProperty('--c', cols[j]);
+      it.appendChild(el('div', 'n', PLAN_NAMES[j]));
+      it.appendChild(el('div', 'v', money(amts[j])));
+      it.appendChild(el('div', 'p', (custom ? (b > 0 ? Math.round(amts[j] * 100 / b) : 0) : (sum ? Math.round(parts[j] * 100 / sum) : 0)) + '%'));
+      list.appendChild(it);
+    }
+    if (custom && b > tot) { var rest = document.createElement('i'); rest.style.flex = String(b - tot) + ' 1 0'; rest.style.background = 'transparent'; bar.appendChild(rest); }
+  }
+  function renderBuckets(b) {                            // 花費、投資、儲蓄三張卡片：只顯示目標金額
+    var custom = data.plan.mode === 'custom';
+    var parts = planParts(data.plan.mode), sum = parts[0] + parts[1] + parts[2];
+    var cols = ['#234838', '#6f8f7c', '#b9cdbd'];
+    for (var j = 0; j < 3; j++) {
+      var box = $('bk' + j); box.style.setProperty('--c', cols[j]);
+      var goal = custom ? parts[j] : (sum ? b * parts[j] / sum : 0);
+      var share = custom ? (b > 0 ? Math.round(parts[j] * 100 / b) : 0) : (sum ? Math.round(parts[j] * 100 / sum) : 0);
+      var nm = box.querySelector('.bk-name'); nm.textContent = PLAN_NAMES[j] + ' '; nm.appendChild(el('small', '', '占 ' + share + '%'));
+      var val = box.querySelector('.bk-val'); val.textContent = b > 0 || custom ? '目標 ' + money(goal) : '填入收入後開始計算';
+      var ed = box.querySelector('.bk-edit'), ai = ed.querySelector('input'); ed.hidden = !custom; val.hidden = custom;
+      if (custom) { if (document.activeElement !== ai) ai.value = parts[j] ? parts[j].toLocaleString('en-US') : ''; ed.querySelector('small').textContent = '占總收入 ' + share + '%' + (b > 0 && j === autoIdx() ? '・自動計算' : ''); }
+    }
+  }
+  function renderPlans(b) {
+    renderAlloc(b);
+    PRESETS.concat([{ id: 'custom' }]).forEach(function (pr) {
+      var d = $('plan-' + pr.id), parts = planParts(pr.id), sum = parts[0] + parts[1] + parts[2];
+      d.setAttribute('aria-checked', String(data.plan.mode === pr.id));
+      if (pr.id === 'custom') { d.setAttribute('aria-checked', String(data.plan.mode === 'custom')); return; }
+      d.querySelector('.pct').textContent = parts.map(function (x) { return Math.round(x * 100 / sum) + '%'; }).join(' / ');
+    });
+  }
+  // ---------- 畫面 ----------
+  function render() {
+    $('monthLabel').textContent = monthText(month);
+    var b = totalOf('income', month);
+    syncSlots('income'); applyCustom(b); renderPlans(b);
+    $('cardTotal').textContent = money(b);
+    renderBuckets(b);
+  }
+
+  // ---------- 收入來源 ----------
+  var curG = 'income';
+  function openAdd(g) {
+    curG = g; $('srcTitle').textContent = '新增' + gName(g); $('srcName').placeholder = g === 'fixed' ? '例如 房貸、學費、訂閱費' : g === 'variable' ? '例如 寵物、美容、聚餐' : g === 'prepaid' ? '例如 健身房、課程、儲值金' : '例如 兼職、租金、紅包';
+    $('srcName').value = ''; $('srcErr').textContent = ''; openDlg($('srcDlg')); setTimeout(function () { try { $('srcName').focus(); } catch (e) {} }, 50);
+  }
+  $('addSrc').addEventListener('click', function () { openAdd('income'); });
+  $('srcCancel').addEventListener('click', function () { closeDlg($('srcDlg')); });
+  $('srcForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var g = curG, st = gStore(g), n = $('srcName').value.trim().slice(0, 12);
+    if (!n) { $('srcErr').textContent = '請輸入名稱。'; return; }
+    if (st.sources.indexOf(n) > -1) { $('srcErr').textContent = '已經有這個選項了。'; return; }
+    if (slotsOf(g, month).length >= MAX_SLOTS) { $('srcErr').textContent = '每個月最多 ' + MAX_SLOTS + ' 格。'; return; }
+    st.sources.push(n);
+    var os = ownSlots(g);
+    if (!os.some(function (x) { return x.src === n; })) os.push({ src: n, amt: 0 });
+    save(); closeDlg($('srcDlg')); buildSlots(g); render();
+    setTimeout(function () { try { $(gIds(g).amt + (st.slots[month].length - 1)).focus(); } catch (x) {} }, 50);
+  });
+
+  // ---------- 編輯選項（改名、刪除；刪除時用到它的格子一起刪除） ----------
+  function renderSrcList() {
+    var g = curG, st = gStore(g);
+    var box = $('srcList'); box.textContent = '';
+    st.sources.forEach(function (name, idx) {
+      var row = el('div', 'src-item');
+      var inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 12; inp.value = name; inp.setAttribute('aria-label', '選項名稱 ' + (idx + 1));
+      function commit() {
+        var n = inp.value.trim().slice(0, 12);
+        if (n === name) { inp.value = name; return; }
+        if (!n) { $('srcMgrErr').textContent = '名稱不能空白。'; inp.value = name; return; }
+        if (st.sources.indexOf(n) > -1) { $('srcMgrErr').textContent = '已經有「' + n + '」這個選項了。'; inp.value = name; return; }
+        $('srcMgrErr').textContent = '';
+        st.sources[idx] = n;
+        Object.keys(st.slots).forEach(function (k) { st.slots[k].forEach(function (x) { if (x.src === name) x.src = n; }); });
+        name = n; save(); fillSources(g); render();
+      }
+      inp.addEventListener('change', commit);
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
+      var del = el('button', 'btn danger small', '刪除'); del.type = 'button';
+      if (g === 'income' && st.sources.length <= 1) del.disabled = true;   // 收入來源至少留一個；其他可以全部刪除
+      del.addEventListener('click', function () {                      // 先確認，再刪除
+        var nm0 = st.sources[idx], a0 = 0; slotsOf(g, month).forEach(function (x) { if (x.src === nm0) a0 += x.amt; });
+        $('srcDelInfo').textContent = a0 > 0 ? '這個月「' + nm0 + '」的 ' + money(a0) + ' 也會一起刪除。' : '「' + nm0 + '」';
+        srcDelAsk = { g: g, idx: idx }; openDlg($('srcDelDlg'));
+      });
+      row.appendChild(inp); row.appendChild(del); box.appendChild(row);
+    });
+  }
+  var srcDelAsk = null, srcUndo = null, srcUndoTimer = null;     // 刪除選項：確認後刪除，10 秒內可復原
+  $('srcDelCancel').addEventListener('click', function () { srcDelAsk = null; closeDlg($('srcDelDlg')); });
+  $('srcDelOk').addEventListener('click', function () {
+    var a = srcDelAsk; srcDelAsk = null; closeDlg($('srcDelDlg')); if (!a) return;
+    var st = gStore(a.g), removed = st.sources[a.idx];
+    var snap = { g: a.g, name: removed, sources: st.sources.slice(), slots: JSON.parse(JSON.stringify(st.slots)) };
+    st.sources.splice(a.idx, 1);
+    Object.keys(st.slots).forEach(function (k) {
+      st.slots[k] = st.slots[k].filter(function (x) { return x.src !== removed; });
+      if (!st.slots[k].length && st.sources.length) st.slots[k] = [{ src: st.sources[0], amt: 0 }];
+    });
+    $('srcMgrErr').textContent = ''; save(); buildSlots(a.g); render(); renderSrcList();
+    showSrcUndo(snap);
+  });
+  function hideSrcUndo() { clearTimeout(srcUndoTimer); srcUndo = null; $('srcUndoBar').hidden = true; $('srcUndoBar2').hidden = true; }
+  function showSrcUndo(snap) {
+    clearTimeout(srcUndoTimer); srcUndo = snap;
+    $('srcUndoText').textContent = $('srcUndoText2').textContent = '已刪除「' + snap.name + '」';
+    $('srcUndoBar').hidden = false; $('srcUndoBar2').hidden = false;
+    srcUndoTimer = setTimeout(hideSrcUndo, 10000);
+  }
+  function doSrcUndo() {
+    if (!srcUndo) return; var st = gStore(srcUndo.g);
+    st.sources = srcUndo.sources; st.slots = srcUndo.slots;
+    var g = srcUndo.g; hideSrcUndo(); save(); buildSlots(g); render(); renderSrcList();
+  }
+  $('srcUndoBtn').addEventListener('click', doSrcUndo); $('srcUndoBtn2').addEventListener('click', doSrcUndo);
+  function openEdit(g) { curG = g; $('srcMgrTitle').textContent = '編輯' + gName(g) + '選項'; $('srcMgrErr').textContent = ''; renderSrcList(); openDlg($('srcMgrDlg')); }
+  $('editSrc').addEventListener('click', function () { openEdit('income'); });
+  $('srcMgrDone').addEventListener('click', function () { closeDlg($('srcMgrDlg')); });
+
+  // ---------- 對話框 ----------
+  function openDlg(d) { try { if (typeof d.showModal === 'function') { d.showModal(); return; } } catch (e) {} d.setAttribute('open', ''); d.classList.add('dlg-fallback'); }
+  function closeDlg(d) { try { if (typeof d.close === 'function') { d.close(); return; } } catch (e) {} d.removeAttribute('open'); d.classList.remove('dlg-fallback'); }
+
+  // ---------- 月份與篩選 ----------
+  var copyAsk = false, COPY_GROUPS = ['income'];
+  function monthHas(m) {                                 // 這個月自己（不含沿用）有沒有填東西
+    return COPY_GROUPS.some(function (g) { var st = gStore(g), ex = st.extras || {};
+      return (st.slots[m] && st.slots[m].some(function (x) { return x.amt; })) || (ex[m] && ex[m].length); });
+  }
+  function prevHas(m) {                                  // 上個月（含沿用來的）有沒有可複製的金額
+    return COPY_GROUPS.some(function (g) { return slotsOf(g, m).some(function (x) { return x.amt; }) || (g !== 'income' && extrasOf(g, m).length); });
+  }
+  function resetCopy() { copyAsk = false; $('copyPrev').textContent = '沿用上個月'; $('copyMsg').textContent = ''; }
+  $('copyPrev').addEventListener('click', function () {
+    var prev = shiftMonth(month, -1), msg = $('copyMsg');
+    if (!prevHas(prev)) { msg.textContent = monthText(prev) + '沒有資料可以沿用。'; copyAsk = false; this.textContent = '沿用上個月'; return; }
+    if (monthHas(month) && !copyAsk) { copyAsk = true; this.textContent = '再按一次，覆蓋這個月'; msg.textContent = '這個月已經有資料，沿用會取代它。'; return; }
+    copyAsk = false; this.textContent = '沿用上個月';
+    COPY_GROUPS.forEach(function (g) {
+      var st = gStore(g);
+      st.slots[month] = JSON.parse(JSON.stringify(slotsOf(g, prev)));
+      if (g !== 'income') { var ex = st.extras || (st.extras = {}); ex[month] = JSON.parse(JSON.stringify(extrasOf(g, prev))); }
+    });
+    save(); buildSlots('income'); render();
+    msg.textContent = '已沿用' + monthText(prev) + '的內容。';
+  });
+  $('prevM').addEventListener('click', function () { month = shiftMonth(month, -1); resetCopy(); render(); });
+  $('nextM').addEventListener('click', function () { month = shiftMonth(month, 1); resetCopy(); render(); });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.collapse-btn'), function (b) {
+    b.addEventListener('click', function () {
+      var p = $(b.getAttribute('data-target')), c = p.classList.toggle('collapsed');
+      b.setAttribute('aria-expanded', String(!c)); b.querySelector('.tog').textContent = c ? '展開' : '收起';
+    });
+  });
+
+  // ---------- 備份與匯入 ----------
+  var inFrame = false; try { inFrame = window.self !== window.top; } catch (e) { inFrame = true; }
+  if (inFrame) $('expDl').hidden = true;
+  // 全部備份：一個檔案包含 8 頁的資料（每頁存在這個瀏覽器的一個位置）
+  var ALL_KIND = 'shark-household-all', ALL_KEYS = ['household-expense-v1', 'daily-spend-v1', 'daily-ledger-v1', 'inventory-budget-v1', 'loan-stamps-v1', 'invest-budget-v1', 'saving-budget-v1', 'saving-goals-v1'];
+  function allBackupText() {
+    var pages = {};
+    ALL_KEYS.forEach(function (k) {
+      var raw = null;
+      if (k === KEY) raw = JSON.stringify(data);
+      else { try { raw = localStorage.getItem(k); } catch (e) {} }
+      if (raw) { try { pages[k] = JSON.parse(raw); } catch (e) {} }
+    });
+    return JSON.stringify({ kind: ALL_KIND, version: 1, at: todayISO(), pages: pages });
+  }
+  function parseAll(d) {                              // 檢查是不是「全部備份」；不是回傳 null
+    if (!d || typeof d !== 'object' || d.kind !== ALL_KIND || !d.pages || typeof d.pages !== 'object') return null;
+    var pages = {};
+    ALL_KEYS.forEach(function (k) { var v = d.pages[k]; if (v && typeof v === 'object') pages[k] = v; });
+    if (pages[KEY] && !parseData(pages[KEY])) return null;
+    return { at: typeof d.at === 'string' ? d.at.slice(0, 10) : '', pages: pages };
+  }
+  var UNDO_KEY = 'all-import-undo-v1';                // 匯入前的資料：先放 sessionStorage，放不下再放 localStorage
+  function putUndo(t) { try { sessionStorage.setItem(UNDO_KEY, t); return true; } catch (e) {} try { localStorage.setItem(UNDO_KEY, t); return true; } catch (e) {} return false; }
+  function getUndo() { var t = null; try { t = sessionStorage.getItem(UNDO_KEY); } catch (e) {} if (!t) { try { t = localStorage.getItem(UNDO_KEY); } catch (e) {} } return t; }
+  function dropUndo() { try { sessionStorage.removeItem(UNDO_KEY); } catch (e) {} try { localStorage.removeItem(UNDO_KEY); } catch (e) {} }
+  var impAsk = null;                                  // 全部取代前，再確認一次
+  function resetImpAsk() { impAsk = null; $('impOk').textContent = '匯入'; $('impOk').classList.remove('danger'); }
+  $('expBtn').addEventListener('click', function () { $('expText').value = allBackupText(); openDlg($('expDlg')); });
+  $('expClose').addEventListener('click', function () { closeDlg($('expDlg')); });
+  $('expCopy').addEventListener('click', function () {
+    var ta = $('expText'), b = $('expCopy');
+    function done() { b.textContent = '已複製'; setTimeout(function () { b.textContent = '複製'; }, 1500); }
+    function fallback() { ta.focus(); ta.select(); try { if (document.execCommand('copy')) done(); } catch (e) {} }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, fallback); else fallback();
+  });
+  $('expDl').addEventListener('click', function () {
+    try { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([$('expText').value], { type: 'application/json' })); a.download = '家用工具全部備份_' + todayISO() + '.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); } catch (e) {}
+  });
+  $('impBtn').addEventListener('click', function () { $('impText').value = ''; $('impFile').value = ''; $('impErr').textContent = ''; resetImpAsk(); openDlg($('impDlg')); });
+  $('impCancel').addEventListener('click', function () { resetImpAsk(); closeDlg($('impDlg')); });
+  $('impText').addEventListener('input', function () { if (impAsk) { resetImpAsk(); $('impErr').textContent = ''; } });
+  $('impFile').addEventListener('change', function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    var r = new FileReader(); r.onload = function () { $('impText').value = String(r.result || ''); resetImpAsk(); $('impErr').textContent = ''; }; r.readAsText(f);
+  });
+  $('impOk').addEventListener('click', function () {
+    var txt = $('impText').value.trim(); if (!txt) { $('impErr').textContent = '請選擇備份檔，或貼上備份文字。'; return; }
+    var raw = null; try { raw = JSON.parse(txt); } catch (e) {}
+    var all = parseAll(raw);
+    if (all) {
+      if (!impAsk) {                                  // 第一次按：先說清楚會發生什麼
+        impAsk = all; $('impOk').textContent = '確定，全部取代'; $('impOk').classList.add('danger');
+        $('impErr').textContent = '這份是' + (all.at ? ' ' + all.at + ' 的' : '') + '全部備份。確定後，8 頁原本的資料都會被清掉、換成備份的內容。匯入後 10 秒內可以按「復原」回到原本的資料，超過就救不回來了。確定的話請再按一次。';
+        return;
+      }
+      var snap = {};                                  // 匯入前先把 8 頁原本的資料留一份，給「復原」用
+      ALL_KEYS.forEach(function (k) { try { snap[k] = localStorage.getItem(k); } catch (e) { snap[k] = null; } });
+      snap[KEY] = JSON.stringify(data);
+      if (!putUndo(JSON.stringify(snap))) { $('impErr').textContent = '這個瀏覽器沒辦法先留一份原本的資料，匯入後會無法復原，所以先不匯入。請確認不是無痕視窗，或先備份目前的資料。'; resetImpAsk(); return; }
+      var ok = true;
+      ALL_KEYS.forEach(function (k) {
+        try { if (impAsk.pages[k]) localStorage.setItem(k, JSON.stringify(impAsk.pages[k])); else localStorage.removeItem(k); } catch (e) { ok = false; }
+      });
+      resetImpAsk();
+      if (!ok) { $('impErr').textContent = '有部分資料沒有存進去，請確認瀏覽器沒有開無痕或關閉儲存功能，再試一次。'; return; }
+      try { sessionStorage.setItem('all-imported', all.at || '1'); } catch (e) {}
+      location.reload();                              // 重新載入，讓這一頁用匯入的資料重新開始
+      return;
+    }
+    var p = raw ? parseData(raw) : null;               // 舊版只有「預算規劃」一頁的備份，也可以匯入
+    if (!p) { $('impErr').textContent = '這不是有效的備份內容，請確認有複製完整。'; return; }
+    data = p; save(); closeDlg($('impDlg')); buildSlots('income'); render();
+  });
+
+  // ---------- 開始 ----------
+  var GUIDE_KEY = 'budget-guide-seen-v1';                // 「第一次使用」說明：按「我知道了」後不再出現
+  var guideSeen = false; try { guideSeen = localStorage.getItem(GUIDE_KEY) === '1'; } catch (e) {}
+  $('guideBox').hidden = guideSeen;
+  $('guideOk').addEventListener('click', function () { $('guideBox').hidden = true; try { localStorage.setItem(GUIDE_KEY, '1'); } catch (e) {} });
+  load();
+  (function () {                                      // 匯入或復原後重新載入：顯示結果；匯入後 10 秒內可以復原
+    var imp = null, undone = null;
+    try { imp = sessionStorage.getItem('all-imported'); sessionStorage.removeItem('all-imported'); undone = sessionStorage.getItem('all-undone'); sessionStorage.removeItem('all-undone'); } catch (e) {}
+    var body = $('bkPanel').querySelector('.panel-body');
+    if (undone) { dropUndo(); var m = el('p', 'note-s', '✓ 已復原，8 頁都回到匯入前的資料了。'); m.setAttribute('role', 'status'); m.style.cssText = 'margin:10px 0 0;color:#385749;font-weight:700'; body.appendChild(m); return; }
+    if (!imp) { dropUndo(); return; }                 // 不是剛匯入完：舊的復原資料不再需要
+    var bar = el('div', 'undo-bar'); bar.setAttribute('role', 'status'); bar.style.marginTop = '10px';
+    bar.appendChild(el('span', '', '✓ 已匯入全部資料' + (imp !== '1' ? '（' + imp + ' 的備份）' : '') + '，8 頁都換成備份的內容了。'));
+    var ub = el('button', 'btn ghost small', '復原'); ub.type = 'button'; bar.appendChild(ub); body.appendChild(bar);
+    var timer = setTimeout(function () { dropUndo(); ub.remove(); }, 10000);
+    ub.addEventListener('click', function () {
+      clearTimeout(timer); var t = getUndo(), snap = null; try { snap = JSON.parse(t); } catch (e) {}
+      if (!snap) { ub.remove(); bar.querySelector('span').textContent = '找不到匯入前的資料，沒辦法復原。'; return; }
+      ALL_KEYS.forEach(function (k) { try { if (snap[k] != null) localStorage.setItem(k, snap[k]); else localStorage.removeItem(k); } catch (e) {} });
+      try { sessionStorage.setItem('all-undone', '1'); } catch (e) {}
+      location.reload();
+    });
+  })();
+  buildSlots('income'); initBkEdit(); buildPlans();
+  month = todayISO().slice(0, 7);
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>物品庫存與採購預算</title>
+<style>
+  :root {
+    --green: #385749;
+    --ink: #293831;
+    --muted: #5f6f66;
+    --bg: #F7F5EF;
+    --card: #FFFEFA;
+    --line: #D3DDD3;
+    --head: #E8EEE5;
+    --tint: #E8EEE5;
+    --warn: #b3261e;
+    --amber: #8a5a00;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); color-scheme: light; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 18px; }
+
+  .hero { text-align: center; background: #234838; color: #fff; padding: 52px 0 44px; margin-bottom: 30px; }
+  .hero h1 { margin: 0 0 12px; font-size: 2.3rem; font-weight: 700; letter-spacing: 0.04em; line-height: 1.25; }
+  .hero p { margin: 0; font-size: 1.05rem; opacity: 0.95; text-wrap: balance; }
+
+  .save-status { margin: 0 0 16px; color: var(--warn); font-weight: 500; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 26px 26px 24px; }
+  .cards.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cards .card { text-align: center; }
+  .cards.two .label { display: block; }
+  .cards.two .budget-input { text-align: left; }
+  .budget-wrap { display: flex; justify-content: center; align-items: baseline; margin-top: 4px; font-size: 2.4rem; font-weight: 500; line-height: 1.3; }
+  .budget-sign { flex: none; }
+  .budget-input { -moz-appearance: textfield; display: block; width: 5ch; margin-top: 0; padding: 0; border: 0; background: transparent; font: inherit; font-size: 2.4rem; font-weight: 500; line-height: 1.3; color: var(--ink); min-width: 0; }
+  .budget-input::-webkit-outer-spin-button, .budget-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .budget-input::placeholder { color: #a3aea6; }
+  .budget-input:focus, .budget-input:focus-visible { outline: none; box-shadow: none; }
+  .card .form-error { min-height: 0; margin: 0; }
+  .card .value.neg { color: var(--warn); }
+  .card.tint { background: var(--tint); }
+  .card .label { font-size: 0.95rem; color: var(--muted); }
+  .card .value { margin-top: 4px; font-size: 2.4rem; font-weight: 700; line-height: 1.3; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 26px; margin-bottom: 20px; }
+  .panel h2 { margin: 0; font-size: 1.75rem; font-weight: 500; line-height: 1.3; }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; }
+  .guide { margin: -8px 0 14px; color: var(--muted); }
+  .guide p { margin: 0 0 6px; }
+  .collapse-btn { display: inline-flex; align-items: center; gap: 14px; margin: 0; padding: 4px 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+  .collapse-btn .tog { display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; color: var(--muted); }
+  .chev { width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin-top: -4px; transition: transform 0.15s; }
+  .panel.collapsed .chev { transform: rotate(-45deg); margin-top: 0; }
+  .panel.collapsed .panel-body, .panel.collapsed .head-tools { display: none; }
+  .panel.collapsed .panel-head { margin-bottom: 0; }
+  .progress-wrap { margin: 0 0 16px; }
+  .progress-label { margin-bottom: 6px; font-size: 0.95rem; }
+  .progress { height: 10px; border-radius: 999px; background: var(--head); overflow: hidden; }
+  .progress-fill { width: 0; height: 100%; border-radius: 999px; background: var(--green); transition: width 0.2s; }
+  .formula { margin: 4px 0 14px; color: var(--muted); }
+
+  button { font: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .btn-primary { background: var(--green); color: #fff; border: 0; border-radius: 12px; padding: 14px 22px; font-size: 1.05rem; white-space: nowrap; }
+  .btn-primary:hover { background: #2d4639; }
+  .btn-secondary { background: var(--card); color: var(--ink); border: 1px solid #B4C2B5; border-radius: 12px; padding: 12px 22px; font-size: 1rem; }
+  .btn-secondary:hover { background: var(--head); }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #7aa38a; outline-offset: 2px; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; margin-bottom: 18px; }
+  .filters input[type=search] { flex: 1 1 220px; max-width: 360px; }
+  .filters input, .filters select, .field input {
+    font: inherit; color: var(--ink); background: var(--card);
+    border: 1px solid #B4C2B5; border-radius: 10px; padding: 12px 14px; min-width: 0;
+  }
+  .filters select { padding-right: 10px; }
+  .head-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+  .head-tools select { font: inherit; color: var(--ink); background: var(--card); border: 1px solid #B4C2B5; border-radius: 10px; padding: 12px 10px 12px 14px; }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 640px; }
+  th { background: var(--head); text-align: left; font-weight: 700; padding: 14px; white-space: nowrap; }
+  td { padding: 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  #itemRows td, #buyRows td, .items-table th, .buy-table th { text-align: center; }
+  table.buy-table th, table.buy-table td, table.buy-table th.num, table.buy-table td.num, table.buy-table th.chk { text-align: center; }
+  .items-table .actions, .buy-table .actions { justify-content: center; }
+  .chk-box { width: 20px; height: 20px; accent-color: var(--green); cursor: pointer; vertical-align: middle; }
+  th.chk { width: 64px; }
+  .qty-input { width: 84px; font: inherit; color: var(--ink); background: var(--card); border: 1px solid #B4C2B5; border-radius: 8px; padding: 6px 8px; text-align: center; }
+  .qty-input:disabled { background: transparent; border-color: transparent; color: var(--ink); opacity: 1; }
+  .cv { display: block; }
+  .empty { text-align: center; color: var(--muted); padding: 28px 14px; }
+  .sub { display: block; font-size: 0.85rem; color: var(--muted); }
+  .tag { display: block; font-size: 0.85rem; font-weight: 500; }
+  .tag.expired { color: var(--warn); }
+  .tag.soon { color: var(--amber); }
+  .tag { display: block; width: fit-content; margin: 2px auto 0; padding: 1px 8px; border-radius: 999px; }
+  .tag.expired { background: #fbeae8; }
+  .tag.soon { background: #fbf0d9; }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn-small { background: var(--card); color: var(--ink); border: 1px solid #B4C2B5; border-radius: 9px; padding: 6px 12px; font-size: 0.9rem; white-space: nowrap; }
+  .btn-small:hover { background: var(--head); }
+  .btn-small.danger { color: var(--warn); }
+
+  #logList { margin: 18px 0 0; padding: 0; list-style: none; }
+  #logList li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+  #logList li:first-child { border-top: 0; padding-top: 0; }
+  #logList li.log-empty { display: block; color: var(--muted); }
+  .log-text { min-width: 0; overflow-wrap: anywhere; }
+  .log-actions { display: flex; gap: 6px; flex: none; }
+  main.wrap { padding-bottom: 40px; }
+  .monthbar { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 14px; }
+  .monthbar .mlabel { min-width: 9.5em; text-align: center; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .monthbar .btn-small { min-height: 40px; min-width: 44px; font-size: 1.1rem; }
+  .month-note { margin: -4px 0 12px; text-align: center; color: var(--muted); font-size: 0.9rem; }
+  .credit { margin: 8px 0 0; text-align: center; font-size: 0.85rem; color: var(--muted); }
+
+  dialog { width: min(440px, calc(100vw - 32px)); border: 0; border-radius: 16px; padding: 28px; color: var(--ink); background: var(--card); box-shadow: 0 12px 40px rgba(20, 40, 30, 0.25); }
+  dialog[open] { position: fixed; top: 0; right: 0; bottom: 0; left: 0; margin: auto; height: fit-content; max-height: calc(100vh - 24px); overflow-y: auto; z-index: 1000; }
+  dialog.dlg-fallback { box-shadow: 0 0 0 100vmax rgba(20, 40, 30, 0.45); }
+  dialog::backdrop { background: rgba(20, 40, 30, 0.45); }
+  dialog h3 { margin: 0 0 18px; font-size: 1.4rem; font-weight: 500; }
+  .field { display: block; margin-bottom: 14px; }
+  .field span { display: block; margin-bottom: 4px; font-size: 0.95rem; }
+  .field input { width: 100%; }
+  .hint { display: block; margin-top: 4px; font-size: 0.85rem; line-height: 1.5; color: var(--muted); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-error { min-height: 1.4em; margin: 0 0 8px; color: var(--warn); font-size: 0.95rem; }
+  .undo-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; background: var(--tint); font-size: .95rem; }
+  .undo-bar[hidden] { display: none; }
+  .undo-bar span { min-width: 0; overflow-wrap: anywhere; }
+  .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+  .limit-msg { margin: 0 0 18px; }
+  .backup h2 { font-size: 1.35rem; }
+  .bk-desc { margin: 8px 0 0; }
+  .bk-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .bk-hint { margin: 0 0 12px; color: var(--muted); }
+  .bk-text { display: block; width: 100%; font: 0.8rem/1.5 ui-monospace, Menlo, Consolas, monospace; color: var(--ink); background: var(--card); border: 1px solid #B4C2B5; border-radius: 10px; padding: 10px 12px; resize: vertical; }
+    #expDownload[hidden] { display: none; }
+  .bk-msg { min-height: 1.4em; margin: 8px 0 0; font-size: 0.95rem; color: var(--muted); }
+  #impDialog .field { margin-bottom: 10px; }
+  .use-info { margin: 0 0 14px; color: var(--muted); }
+
+  .panel.plan-panel { padding: 0; overflow: hidden; border-radius: 14px; }
+  .panel.plan-panel .panel-head { margin: 0; padding: 12px 16px; background: var(--tint); justify-content: flex-start; }
+  .plan-panel .panel-head h2 { font-size: 1.1rem; font-weight: 700; }
+  .plan-panel .collapse-btn { padding: 0; gap: 8px; }
+  .plan-panel .collapse-btn .tog { font-size: 0.9rem; }
+  .plan-panel .panel-body { padding: 14px 16px; }
+  .plan-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: stretch; }
+  .plan-box { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; min-width: 0; text-align: center; background: var(--card); }
+  .plan-box .label { display: block; margin: 0; font-size: 0.85rem; font-weight: 400; color: var(--muted); }
+  .plan-box strong { display: block; font-size: 1.2rem; line-height: 1.5; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .plan-box.over strong, .plan-box.over .label { color: var(--warn); }
+  .bud-val { display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: 700; line-height: 1.5; font-variant-numeric: tabular-nums; }
+  .bud-val span { flex: none; }
+  .bud-box input { width: 1ch; min-width: 1ch; height: 1.5em; margin: 0; padding: 0; border: 0; background: transparent; text-align: left; font: inherit; line-height: inherit; color: var(--ink); outline: none; }
+  .bud-tip { font-weight: 400; font-size: 0.8rem; color: var(--muted); }
+  .bud-box input::placeholder { font-size: 0.95rem; font-weight: 400; color: #8a978d; }
+  .bud-box:focus-within { border-color: var(--green); }
+  .plan-bar { height: 10px; border-radius: 999px; background: var(--tint); margin-top: 12px; overflow: hidden; }
+  .plan-bar i { display: block; height: 100%; width: 0; background: var(--green); border-radius: 999px; transition: width 0.4s ease; }
+  .plan-bar.over i { background: var(--warn); }
+  .plan-note { margin: 12px 0 0; color: var(--muted); font-size: 0.92rem; }
+  .plan-panel .form-error { margin: 8px 0 0; min-height: 0; }
+  @media (max-width: 640px) { .plan-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .plan-grid .bud-box { grid-column: 1 / -1; } .panel.plan-panel { padding: 0; } }
+  @media (max-width: 640px) {
+    .wrap { padding: 0 14px; }
+    .table-scroll { overflow: visible; }
+    table, tbody, tr, td { display: block; }
+    table { min-width: 0; width: 100%; }
+    thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    tbody tr { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+    tbody tr:last-child { margin-bottom: 0; }
+    #itemRows td, #buyRows td, #buyRows td.num, #itemRows td.num { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 6px 0; border: 0; text-align: right; }
+    #itemRows td::before, #buyRows td::before { content: attr(data-label); flex: none; color: var(--muted); font-size: 0.9rem; text-align: left; }
+    #itemRows td[data-label=""]::before, #buyRows td[data-label=""]::before { content: none; }
+    td .cv { min-width: 0; text-align: right; overflow-wrap: anywhere; }
+    #itemRows td.c-name, #buyRows td.c-name { order: -1; display: block; text-align: left; font-size: 1.1rem; font-weight: 700; padding: 0 0 8px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+    #itemRows td.c-name .cv, #buyRows td.c-name .cv { text-align: left; }
+    #itemRows td.c-act, #buyRows td.c-act { display: block; margin-top: 6px; padding: 10px 0 0; border-top: 1px solid var(--line); }
+    #itemRows td.c-act .cv, #buyRows td.c-act .cv { text-align: left; }
+    .items-table .actions, .buy-table .actions { justify-content: stretch; gap: 8px; }
+    .items-table .actions .btn-small, .buy-table .actions .btn-small { flex: 1 1 auto; min-height: 40px; }
+    #buyRows td.c-chk { align-items: center; }
+    .chk-box { width: 24px; height: 24px; }
+    .qty-input { width: 100px; text-align: right; min-height: 40px; }
+    #itemRows td.empty, #buyRows td.empty { display: block; text-align: center; padding: 20px 0; }
+    #itemRows td.empty::before, #buyRows td.empty::before { content: none; }
+    #itemRows .tag, #buyRows .tag { margin: 2px 0 0 auto; }
+    #itemRows td.c-name .tag, #buyRows td.c-name .tag { margin-left: 0; }
+    .head-tools { flex-wrap: wrap; justify-content: flex-start; width: 100%; }
+    .head-tools select { flex: 1 1 120px; min-width: 0; }
+    .head-tools .btn-primary { flex: 1 1 120px; }
+    .filters input[type=search] { flex: 1 1 100%; max-width: none; }
+    dialog { padding: 20px; }
+    dialog[open] { max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); }
+    .dialog-actions .btn-primary, .dialog-actions .btn-secondary { flex: 1 1 auto; min-height: 44px; }
+    .dialog-actions { position: sticky; bottom: -20px; background: var(--card); padding: 12px 0 20px; margin-top: 0; }
+    dialog h3 { margin-bottom: 12px; }
+    .field { margin-bottom: 10px; }
+    .hero { padding: 36px 0 32px; margin-bottom: 20px; }
+    .hero h1 { font-size: 1.7rem; }
+    .cards, .cards.two { grid-template-columns: 1fr; gap: 12px; }
+    .budget-wrap { font-size: 2rem; }
+    .budget-input:focus, .budget-input:focus-visible { outline: none; box-shadow: none; }
+    .card { padding: 20px; }
+    .card .value { font-size: 2rem; }
+    .panel { padding: 20px 16px; border-radius: 14px; }
+    .panel h2 { font-size: 1.45rem; }
+    .grid2 { grid-template-columns: 1fr; gap: 0; }
+    #logList li:not(.log-empty) { flex-wrap: wrap; }
+    .log-actions .btn-small { min-height: 36px; }
+    .bk-actions .btn-secondary { flex: 1 1 140px; min-height: 44px; }
+    #expDialog .dialog-actions, #impDialog .dialog-actions { flex-wrap: wrap; }
+    .panel-head { flex-wrap: wrap; }
+    .panel-head h2 { white-space: nowrap; }
+  }
+  /* 網頁選單 */
+  .sitenav { background:#F7F5EF; border-bottom:1px solid #D3DDD3; }
+  .sitenav-in { max-width:520px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding-block:10px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); }
+  .sitenav a { flex:0 0 calc((100% - 24px) / 4); min-width:0; box-sizing:border-box; padding:6px 0; border-radius:999px; border:1px solid #D3DDD3; background:#FFFEFA; color:#385749; font-size:.8rem; font-weight:600; text-decoration:none; white-space:nowrap; line-height:1.5; text-align:center; }
+  @media (max-width:360px) { .sitenav-in { gap:6px; } .sitenav a { flex-basis:calc((100% - 18px) / 4); font-size:.72rem; } }
+  .sitenav a:hover { background:#E8EEE5; }
+  .sitenav a:focus-visible { outline:2px solid #385749; outline-offset:2px; }
+  .sitenav a[aria-current="page"] { background:#385749; border-color:#385749; color:#fff; }
+  /* 版面對齊「生活預算」 */
+  .hero { padding-block: 30px 26px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); margin-bottom: 0; }
+  .hero .wrap { padding: 0; }
+  .hero h1 { margin: 0 0 6px; font-size: 1.6rem; line-height: 1.6; letter-spacing: 0; text-wrap: balance; }
+  .hero p { line-height: 1.6; }
+  .hero p { font-size: 1rem; opacity: 1; color: #dbe7de; }
+  main.wrap { padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .panel, .panel.plan-panel { padding: 0; overflow: hidden; border-radius: 14px; margin-bottom: 14px; }
+  .panel .panel-head { margin: 0; padding: 12px 16px; background: var(--tint); flex-wrap: wrap; gap: 10px; }
+  .panel .panel-head h2 { margin: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.5; }
+  .panel .panel-body { padding: 14px 16px; }
+  .collapse-btn { padding: 0; gap: 8px; }
+  .collapse-btn .chev { display: none; }
+  .panel.collapsed .panel-head { margin: 0; }
+  .guide { margin: 0 0 12px; }
+  .progress { height: 12px; }
+  .btn-primary { padding: 10px 16px; border-radius: 10px; font-size: 1rem; font-weight: 600; min-height: 44px; }
+  .btn-secondary { padding: 10px 16px; border-radius: 10px; font-size: 1rem; font-weight: 600; min-height: 44px; background: #fff; color: var(--green); border-color: var(--line); }
+  .btn-small { padding: 6px 12px; min-height: 36px; border-radius: 10px; font-size: .92rem; font-weight: 600; background: #fff; color: var(--green); border-color: var(--line); }
+  .btn-small.danger { color: var(--warn); border-color: #e3c3c0; }
+  .monthbar .btn-small { min-height: 44px; padding: 8px 14px; font-size: 1rem; }
+  .filters input, .filters select, .field input, .head-tools select, .bk-text, .qty-input { border-color: var(--line); border-radius: 10px; }
+  th { background: var(--tint); font-weight: 600; font-size: .92rem; padding: 10px 12px; }
+  td { padding: 10px 12px; border-bottom: 0; border-top: 1px solid var(--line); vertical-align: middle; }
+  #logList { margin: 0; }
+  .bk-desc { margin: 0 0 12px; font-size: .92rem; color: var(--muted); }
+  .bk-actions { margin-top: 0; }
+  .credit { margin: 22px 0 0; }
+  .copy-row { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: -4px 0 14px; }
+  .copy-msg { font-size: .9rem; color: var(--muted); text-align: center; min-height: 1.4em; }
+  @media (max-width: 640px) { .hero { padding-block: 30px 26px; margin-bottom: 0; } .hero h1 { font-size: 1.4rem; } }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <h1>🧻 物品庫存與採購預算</h1>
+    <p>記庫存、用量、效期，一眼看懂要補什麼🌿</p>
+  </div>
+</header>
+<noscript><p style="margin:0;padding:12px 16px;background:#FFF4E5;color:#8a5a00;text-align:center;font-size:.95rem;line-height:1.6">這個預覽沒有執行網頁程式，所以日期、按鈕和資料都無法使用。請改用 Safari 或 Chrome 開啟檔案，或使用網路預覽連結。</p></noscript>
+<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">預算規劃</a><a href="生活預算.html">生活預算</a><a href="日常花費.html">日常花費</a><a href="物品庫存與採購預算.html" aria-current="page">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
+
+<main class="wrap">
+  <div class="save-status" id="saveStatus" role="status" hidden>這次未能自動儲存</div>
+
+  <div class="monthbar">
+    <button type="button" class="btn-small" id="prevM" aria-label="上個月">‹</button>
+    <div class="mlabel" id="monthLabel" aria-live="polite"></div>
+    <button type="button" class="btn-small" id="nextM" aria-label="下個月">›</button>
+  </div>
+  <div class="copy-row"><button type="button" class="btn-small" id="copyPrev">沿用上個月</button><span class="copy-msg" id="copyMsg" role="status" aria-live="polite"></span></div>
+  <p class="month-note" id="monthNote" hidden>你正在看其他月份：物品清單、預算和用量紀錄都依月份各自記錄。</p>
+
+  <section class="panel plan-panel" id="p_plan">
+    <div class="panel-head">
+      <h2><button type="button" class="collapse-btn" aria-expanded="true" aria-controls="planBody"><span class="ttl">採購規劃</span><span class="tog"><span class="tog-text">收起</span></span></button></h2>
+    </div>
+    <div class="panel-body" id="planBody">
+      <div class="plan-grid">
+        <div class="plan-box bud-box"><label class="label" for="budget">規劃預算 <small class="bud-tip">（可自行輸入金額）</small></label><div class="bud-val"><span>$</span><input type="text" id="budget" inputmode="decimal" autocomplete="off" placeholder="點此輸入金額" aria-describedby="planNote"></div></div>
+        <div class="plan-box"><div class="label">尚未採買預估</div><strong id="cardNeed">$0</strong></div>
+        <div class="plan-box" id="leftBox"><div class="label" id="cardLeftLbl">還剩</div><strong id="cardLeft">—</strong></div>
+      </div>
+      <div class="plan-bar" id="planBarWrap"><i id="planBar"></i></div>
+      <div class="form-error" id="budgetError" role="alert"></div>
+      <p class="plan-note" id="planNote">點上方「規劃預算」自行輸入金額，下面的採買清單會自動和它比較。</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2><button type="button" class="collapse-btn" aria-expanded="true" aria-controls="itemsBody"><span class="ttl">物品清單</span><span class="tog"><span class="tog-text">收起</span><span class="chev" aria-hidden="true"></span></span></button></h2>
+      <div class="head-tools">
+        <select id="statusFilter" aria-label="狀態篩選">
+          <option value="">全部狀態</option>
+          <option value="need">需補貨</option>
+          <option value="soon">即將到期</option>
+          <option value="expired">已過期</option>
+          <option value="ok">庫存充足</option>
+        </select>
+        <button type="button" class="btn-primary" id="addBtn">+ 新增物品</button>
+      </div>
+    </div>
+    <div class="panel-body" id="itemsBody">
+    <div class="guide">
+      <p>先按「新增物品」，填入目前庫存、目標庫存和單價。儲存後，到採買清單看建議買多少、預估要花多少錢。</p>
+    </div>
+    <div class="filters">
+      <input type="search" id="search" placeholder="搜尋品名或分類" aria-label="搜尋品名或分類">
+    </div>
+    <div class="table-scroll">
+      <table class="items-table">
+        <thead>
+          <tr><th>物品</th><th class="num">庫存</th><th class="num">累計用量</th><th class="num">單價</th><th>有效期限</th><th>操作</th></tr>
+        </thead>
+        <tbody id="itemRows"></tbody>
+      </table>
+    </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2><button type="button" class="collapse-btn" aria-expanded="true" aria-controls="buyBody"><span class="ttl">採買清單</span><span class="tog"><span class="tog-text">收起</span><span class="chev" aria-hidden="true"></span></span></button></h2>
+      <div class="head-tools">
+        <select id="buyFilter" aria-label="採買清單狀態篩選">
+          <option value="">全部狀態</option>
+          <option value="soon">即將到期</option>
+          <option value="expired">已過期</option>
+        </select>
+        <button type="button" class="btn-primary" id="addBtn2">+ 新增物品</button>
+      </div>
+    </div>
+    <div class="panel-body" id="buyBody">
+    <p class="formula">勾選「已買」後，會把實際購買數量加進物品清單的庫存，並從待買金額扣除。</p>
+    <p class="formula">先看還有多少能用，離想留的數量差多少，就補多少。過期的先不算，補貨金額會照實際買的數量和單價算。</p>
+    <div class="progress-wrap">
+      <div class="progress-label" id="progLabel">採買進度　已買 0 / 0 項</div>
+      <div class="progress" id="progBar" role="progressbar" aria-labelledby="progLabel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progFill"></div></div>
+    </div>
+    <div class="table-scroll">
+      <table class="buy-table">
+        <thead>
+          <tr><th class="chk">已買</th><th>物品</th><th class="num">單價</th><th class="num">建議購買</th><th class="num">實際購買</th><th class="num">預估金額</th><th>操作</th></tr>
+        </thead>
+        <tbody id="buyRows"></tbody>
+      </table>
+    </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2 id="logTitle">最近用量紀錄</h2></div>
+    <div class="panel-body" id="logBody"><ul id="logList"></ul></div>
+  </section>
+
+  <section class="panel backup" id="backupBox" aria-labelledby="bkTitle">
+    <div class="panel-head"><h2 id="bkTitle">備份與還原</h2></div>
+    <div class="panel-body">
+    <p style="margin:0 0 12px;color:#5f6f66;font-size:.92rem;line-height:1.6;text-align:left">這一頁的記錄只存在目前使用的瀏覽器，換手機、換電腦、換瀏覽器或清除瀏覽器資料後就看不到了。8 頁的資料要一起到「預算規劃」頁備份，一個檔案就能全部帶走。</p>
+      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#385749;color:#fff;font-weight:600;text-decoration:none">前往預算規劃備份全部資料 ›</a>
+      <div hidden style="display:none"><button type="button" class="btn-secondary" id="expBtn">匯出備份</button><button type="button" class="btn-secondary" id="impBtn">匯入備份</button></div>
+    </div>
+  </section>
+
+  <footer class="credit">© 2026 鯊鯊說心事｜IG：鯊鯊說心事</footer>
+</main>
+
+<dialog id="itemDialog" aria-labelledby="itemDialogTitle">
+  <form id="itemForm" method="dialog" novalidate>
+    <h3 id="itemDialogTitle">新增物品</h3>
+    <label class="field"><span>品名</span><input type="text" id="fName" maxlength="60" autocomplete="off"></label>
+    <label class="field"><span>分類（選填）</span><input type="text" id="fCategory" maxlength="30" autocomplete="off" placeholder="例如：清潔用品"></label>
+    <div class="grid2">
+      <label class="field"><span>目前庫存</span><input type="text" id="fStock" inputmode="decimal" autocomplete="off"></label>
+      <label class="field"><span>目標庫存</span><input type="text" id="fTarget" inputmode="decimal" autocomplete="off"><small class="hint">補貨後希望家裡共有多少。例如尿布剩 1 包、想補到 3 包，這裡就填 3。採買清單會建議買 2 包。</small></label>
+    </div>
+    <div class="grid2">
+      <label class="field"><span>單價</span><input type="text" id="fPrice" inputmode="decimal" autocomplete="off"></label>
+      <label class="field"><span>有效期限（選填）</span><input type="date" id="fExpiry"></label>
+    </div>
+    <p class="form-error" id="itemError" role="alert"></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn-secondary" id="itemCancel">取消</button>
+      <button type="submit" class="btn-primary">儲存</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="delDialog" aria-labelledby="delMsg">
+  <p class="limit-msg" id="delMsg"></p>
+  <div class="dialog-actions">
+    <button type="button" class="btn-secondary" id="delCancel">取消</button>
+    <button type="button" class="btn-primary" id="delOk">刪除</button>
+  </div>
+</dialog>
+
+<dialog id="expDialog" aria-labelledby="expTitle">
+  <h3 id="expTitle">匯出備份</h3>
+  <p class="bk-hint">複製下面的文字，或下載成檔案，再到另一邊的「匯入備份」貼上或選擇檔案。</p>
+  <textarea id="expText" class="bk-text" readonly rows="7" aria-label="備份內容"></textarea>
+  <p class="bk-msg" id="expMsg" role="status"></p>
+  <div class="dialog-actions">
+    <button type="button" class="btn-secondary" id="expClose">關閉</button>
+    <button type="button" class="btn-secondary" id="expDownload">下載檔案</button>
+    <button type="button" class="btn-primary" id="expCopy">複製</button>
+  </div>
+</dialog>
+
+<dialog id="impDialog" aria-labelledby="impTitle">
+  <h3 id="impTitle">匯入備份</h3>
+  <p class="bk-hint">匯入後，會取代這個瀏覽器目前的資料。請選擇備份檔案，或把備份文字貼在下面。</p>
+  <label class="field"><span>備份檔案</span><input type="file" id="impFile" accept=".json,.txt,application/json,text/plain"></label>
+  <textarea id="impText" class="bk-text" rows="6" aria-label="貼上備份內容" placeholder="或貼上備份文字"></textarea>
+  <p class="form-error" id="impError" role="alert"></p>
+  <div class="dialog-actions">
+    <button type="button" class="btn-secondary" id="impCancel">取消</button>
+    <button type="button" class="btn-primary" id="impOk">匯入</button>
+  </div>
+</dialog>
+
+<dialog id="useDialog" aria-labelledby="useDialogTitle">
+  <form id="useForm" method="dialog" novalidate>
+    <h3 id="useDialogTitle">記錄用量</h3>
+    <p class="use-info" id="useInfo"></p>
+    <label class="field"><span>這次用了多少</span><input type="text" id="fUse" inputmode="decimal" autocomplete="off"><small class="hint">庫存如果是用「包」記，這裡也用「包」填。例如拆了 1 包，就填 1。</small></label>
+    <p class="form-error" id="useError" role="alert"></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn-secondary" id="useCancel">取消</button>
+      <button type="submit" class="btn-primary">儲存</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+/* 輸入法組字保護：組字中不改寫欄位內容，避免數字重複 */
+(function () {
+  var sel = 'input[inputmode="numeric"],input[inputmode="decimal"]';
+  function isNum(t) { return t && t.matches && t.matches(sel); }
+  document.addEventListener('compositionstart', function (e) { if (isNum(e.target)) e.target._ime = 1; }, true);
+  document.addEventListener('input', function (e) {
+    var t = e.target; if (!isNum(t)) return;
+    if (t._ime || e.isComposing) { e.stopImmediatePropagation(); return; }
+    if (/[０-９．，]/.test(t.value)) t.value = t.value.replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); }).replace(/．/g, '.').replace(/，/g, ',');
+  }, true);
+  document.addEventListener('compositionend', function (e) {
+    var t = e.target; if (!isNum(t) || !t._ime) return;
+    setTimeout(function () { t._ime = 0; t.dispatchEvent(new Event('input', { bubbles: true })); }, 0);
+  }, true);
+})();
+</script>
+<script>
+  var KEY = 'inventory-budget-v1';
+  var LOG_KEPT = 500;         // 最多保存幾筆（依月份查看過去的用量）
+  var items = [];             // 目前查看月份的物品清單
+  var itemsBy = {};           // 每個月份各自的物品清單 { 'YYYY-MM': [物品] }
+  var log = [];
+  var budget = '';            // 目前查看月份的預算（字串）
+  var budgets = {};           // 每個月份各自的規劃預算 { 'YYYY-MM': '金額' }
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+  function thisMonth() { var d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth() + 1); }
+  var month = thisMonth();    // 目前查看的月份
+  function shiftMonth(m, n) { var p = m.split('-'); var d = new Date(Number(p[0]), Number(p[1]) - 1 + n, 1); return d.getFullYear() + '-' + pad2(d.getMonth() + 1); }
+  function monthOfTs(ts) { var d = new Date(ts); return d.getFullYear() + '-' + pad2(d.getMonth() + 1); }
+  // 這個月沒設定過預算時，沿用前一個有設定的月份
+  function budgetFor(m) {
+    if (Object.prototype.hasOwnProperty.call(budgets, m)) return budgets[m];
+    var best = null;
+    Object.keys(budgets).forEach(function (k) { if (k < m && (best === null || k > best)) best = k; });
+    return best === null ? '' : budgets[best];
+  }
+
+  function $(id) { return document.getElementById(id); }
+  function half(v) { return String(v || '').replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); }).replace(/．/g, '.').replace(/，/g, ',').replace(/,/g, '').trim(); }   // 全形數字（注音輸入）也能讀
+
+  // 開關彈窗；舊版手機瀏覽器不支援 <dialog> 的方法時，改用 open 屬性
+  function openDlg(d) {
+    try { if (typeof d.showModal === 'function') { d.showModal(); return; } } catch (e) {}
+    d.classList.add('dlg-fallback');
+    d.setAttribute('open', '');
+  }
+  function closeDlg(d) {
+    try { if (typeof d.close === 'function') { d.close(); return; } } catch (e) {}
+    d.classList.remove('dlg-fallback');
+    d.removeAttribute('open');
+  }
+
+  // ---------- 格式 ----------
+  function money(n) {
+    return '$' + Math.round(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
+  }
+  function qty(n) { return n.toLocaleString('zh-TW', { maximumFractionDigits: 2 }); }
+  function round2(n) { return Math.round(n * 100) / 100; }
+
+  // ---------- 日期與狀態 ----------
+  function todayUtc() {
+    var d = new Date();
+    return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  // 即將到期：今天起 1 個月內（含今天）；月底日期不存在時取下個月最後一天
+  function soonLimitUtc() {
+    var d = new Date(), y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
+    var t = new Date(y, m + 1, day);
+    if (t.getMonth() !== (m + 1) % 12) t = new Date(y, m + 2, 0);
+    return Date.UTC(t.getFullYear(), t.getMonth(), t.getDate());
+  }
+  function expiryUtc(expiry) {
+    var p = expiry.split('-');
+    return Date.UTC(+p[0], +p[1] - 1, +p[2]);
+  }
+  function daysLeft(expiry) {
+    if (!expiry) return null;
+    var p = expiry.split('-');
+    return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - todayUtc()) / 86400000);
+  }
+  function info(it) {
+    var dl = daysLeft(it.expiry);
+    var expired = dl !== null && dl < 0;
+    var soon = dl !== null && dl >= 0 && expiryUtc(it.expiry) <= soonLimitUtc();
+    var usable = expired ? 0 : it.stock;                 // 已過期的庫存按零計算
+    var need = Math.max(0, round2(it.target - usable));  // 建議購買量
+    return { dl: dl, expired: expired, soon: soon, usable: usable, need: need };
+  }
+
+  // ---------- 畫面 ----------
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+  // 每個儲存格包一層，並標上欄位名稱（手機版卡片排版用；桌面版外觀不變）
+  function decorate(tr, labels) {
+    var tds = tr.children;
+    for (var i = 0; i < tds.length; i++) {
+      var td = tds[i], w = el('div', 'cv');
+      while (td.firstChild) w.appendChild(td.firstChild);
+      td.appendChild(w);
+      td.setAttribute('data-label', labels[i].l);
+      if (labels[i].c) td.classList.add(labels[i].c);
+    }
+  }
+  function emptyRow(cols, text) {
+    var tr = el('tr'); var td = el('td', 'empty', text);
+    td.colSpan = cols; tr.appendChild(td); return tr;
+  }
+  function actionBtn(label, cls, handler) {
+    var b = el('button', 'btn-small' + (cls ? ' ' + cls : ''), label);
+    b.type = 'button';
+    b.addEventListener('click', handler);
+    return b;
+  }
+
+  function plan(it, f) { return it.buyQty !== null && it.buyQty !== undefined ? it.buyQty : f.need; }   // 實際購買數（沒填就用建議購買）
+
+  function renderCards() {
+    var totalNeed = 0, totalListed = 0, expiring = 0;
+    for (var i = 0; i < items.length; i++) {
+      var f = info(items[i]);
+      if (!items[i].done) totalNeed += plan(items[i], f) * items[i].price;
+      // 採買清單內的全部金額（已買的也算，勾選不會讓它被扣回）
+      if (items[i].done) totalListed += items[i].boughtQty * items[i].price;
+      else if (f.need > 0) totalListed += plan(items[i], f) * items[i].price;   // 已勾選（已買）的不計入
+      if (f.expired || f.soon) expiring++;                        // 到期項數只看效期
+    }
+    $('cardNeed').textContent = money(totalNeed);
+    var left = $('cardLeft'), b = Number(budget), has = !(budget === '' || !isFinite(b) || b < 0);
+    var r = has ? round2(b - totalListed) : 0, over = has && b > 0 && r < 0;
+    if (!has) { left.textContent = '—'; $('cardLeftLbl').textContent = '還剩'; }
+    else { left.textContent = money(Math.abs(r)); $('cardLeftLbl').textContent = r < 0 ? '超出' : '還剩'; }
+    $('leftBox').classList.toggle('over', over); $('planBarWrap').classList.toggle('over', over);
+    $('planBar').style.width = (has && b > 0 ? Math.min(100, totalListed * 100 / b) : 0) + '%';
+    var used = has && b > 0 ? (r < 0 ? '目前超出 ' + money(-r) + '。' : '採買清單已用掉 ' + Math.round(totalListed * 100 / b) + '%。') : '';
+    $('planNote').textContent = (has ? '' : '點上方「規劃預算」自行輸入金額，下面的採買清單會自動和它比較。') + used + (expiring ? '即將到期或已到期 ' + expiring + ' 項。' : '');
+  }
+
+  function render() {
+    renderCards();
+    renderItems();
+    renderBuy();
+    renderLog();
+  }
+
+  function renderItems() {
+    var body = $('itemRows');
+    body.textContent = '';
+    if (items.length === 0) {
+      body.appendChild(emptyRow(6, '新增第一筆物品，開始記錄庫存。'));
+      return;
+    }
+    var q = $('search').value.trim().toLowerCase();
+    var status = $('statusFilter').value;
+    var shown = 0;
+    items.forEach(function (it) {
+      var f = info(it);
+      if (q && (it.name + ' ' + it.category).toLowerCase().indexOf(q) < 0) return;
+      if (status === 'need' && f.need <= 0) return;
+      if (status === 'soon' && !f.soon) return;
+      if (status === 'expired' && !f.expired) return;
+      if (status === 'ok' && f.need > 0) return;
+      shown++;
+
+      var tr = el('tr');
+      var tdName = el('td'); tdName.appendChild(document.createTextNode(it.name));
+      if (it.category) tdName.appendChild(el('span', 'sub', it.category));
+      tr.appendChild(tdName);
+
+      var tdStock = el('td', 'num'); tdStock.appendChild(document.createTextNode(qty(it.stock)));
+      tdStock.appendChild(el('span', 'sub', '目標 ' + qty(it.target)));
+      tr.appendChild(tdStock);
+
+      tr.appendChild(el('td', 'num', qty(it.used)));
+      tr.appendChild(el('td', 'num', money(it.price)));
+
+      var tdExp = el('td');
+      if (it.expiry) {
+        tdExp.appendChild(document.createTextNode(it.expiry.replace(/-/g, '/')));
+        if (f.expired) tdExp.appendChild(el('span', 'tag expired', '已過期'));
+        else if (f.dl === 0) tdExp.appendChild(el('span', 'tag soon', '今天到期'));
+        else if (f.soon) tdExp.appendChild(el('span', 'tag soon', f.dl + ' 天後到期'));
+      } else {
+        tdExp.appendChild(el('span', 'sub', '—'));
+      }
+      tr.appendChild(tdExp);
+
+      var tdAct = el('td'); var box = el('div', 'actions');
+      box.appendChild(actionBtn('用了', '', function () { openUse(it.id); }));
+      box.appendChild(actionBtn('編輯', '', function () { openItem(it.id); }));
+      box.appendChild(actionBtn('刪除', 'danger', function () { removeItem(it.id, 'items'); }));
+      tdAct.appendChild(box); tr.appendChild(tdAct);
+      decorate(tr, [{ l: '', c: 'c-name' }, { l: '庫存' }, { l: '累計用量' }, { l: '單價' }, { l: '有效期限' }, { l: '', c: 'c-act' }]);
+      body.appendChild(tr);
+    });
+    if (shown === 0) body.appendChild(emptyRow(6, '沒有符合的物品。'));
+  }
+
+  // 收起／展開
+  document.querySelectorAll('.collapse-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var panel = btn.closest('.panel');
+      var collapsed = panel.classList.toggle('collapsed');
+      btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      btn.querySelector('.tog-text').textContent = collapsed ? '展開' : '收起';
+    });
+  });
+
+  // 勾選「已買」：把實際購買數量加進庫存；取消勾選則扣回
+  function toggleBought(it, checked) {
+    if (checked) {
+      var f = info(it);
+      var q = plan(it, f);
+      it.doneNeed = f.need;
+      it.boughtQty = q;
+      it.stock = round2(it.stock + q);
+      it.done = true;
+    } else {
+      it.stock = Math.max(0, round2(it.stock - it.boughtQty));
+      it.done = false; it.boughtQty = 0; it.doneNeed = 0; it.buyQty = null;
+    }
+    save(); render();
+  }
+
+  function renderBuy() {
+    var body = $('buyRows');
+    body.textContent = '';
+    var any = false;
+    var flt = $('buyFilter').value;
+    var total = 0, got = 0;                      // 採買進度：已買項數 / 需採買項數
+    items.forEach(function (it) { if (info(it).need > 0 || it.done) { total++; if (it.done) got++; } });
+    var pct = total ? Math.round(got * 100 / total) : 0;
+    $('progLabel').textContent = '採買進度　已買 ' + got + ' / ' + total + ' 項';
+    $('progFill').style.width = pct + '%';
+    $('progBar').setAttribute('aria-valuenow', String(pct));
+    items.forEach(function (it) {
+      var f = info(it);
+      if (f.need <= 0 && !it.done) return;
+      if (flt === 'soon' && !f.soon) return;
+      if (flt === 'expired' && !f.expired) return;
+      any = true;
+      var tr = el('tr');
+      var tdChk = el('td');
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.className = 'chk-box'; cb.checked = !!it.done;
+      cb.setAttribute('aria-label', '已買 ' + it.name);
+      cb.addEventListener('change', function () { toggleBought(it, cb.checked); });
+      tdChk.appendChild(cb); tr.appendChild(tdChk);
+      var tdName = el('td'); tdName.appendChild(document.createTextNode(it.name));
+      tr.appendChild(tdName);
+      tr.appendChild(el('td', 'num', money(it.price)));
+      tr.appendChild(el('td', 'num', qty(it.done ? it.doneNeed : f.need)));
+
+      var tdQty = el('td', 'num');
+      var amt = el('td', 'num');
+      var inp = document.createElement('input');
+      inp.type = 'text'; inp.inputMode = 'decimal'; inp.autocomplete = 'off';
+      inp.className = 'qty-input';
+      inp.setAttribute('aria-label', '實際購買 ' + it.name);
+      if (it.done) {
+        inp.value = it.boughtQty; inp.disabled = true;
+        amt.textContent = money(it.boughtQty * it.price);
+      } else {
+        inp.value = plan(it, f);
+        amt.textContent = money(plan(it, f) * it.price);
+        inp.addEventListener('input', function () {
+          var v = half(inp.value), n = Number(v);
+          it.buyQty = (v === '' || !isFinite(n) || n < 0) ? null : n;
+          amt.querySelector('.cv').textContent = money(plan(it, info(it)) * it.price);
+          renderCards(); save();
+        });
+        inp.addEventListener('change', function () { renderBuy(); });
+      }
+      tdQty.appendChild(inp);
+      tr.appendChild(tdQty);
+      tr.appendChild(amt);
+      var tdAct2 = el('td'); var box2 = el('div', 'actions');
+      box2.appendChild(actionBtn('編輯', '', function () { openItem(it.id); }));
+      box2.appendChild(actionBtn('刪除', 'danger', function () { removeItem(it.id, 'buy'); }));
+      tdAct2.appendChild(box2); tr.appendChild(tdAct2);
+      decorate(tr, [{ l: '已買', c: 'c-chk' }, { l: '', c: 'c-name' }, { l: '單價' }, { l: '建議購買' }, { l: '實際購買' }, { l: '預估金額' }, { l: '', c: 'c-act' }]);
+      body.appendChild(tr);
+    });
+    if (!any) body.appendChild(emptyRow(7, flt ? '沒有符合的物品。' : '目前沒有需要補貨的物品。'));
+  }
+
+  function renderLog() {
+    var ul = $('logList');
+    ul.textContent = '';
+    var mp = month.split('-');
+    $('logTitle').textContent = month === thisMonth() ? '最近用量紀錄' : Number(mp[0]) + ' 年 ' + Number(mp[1]) + ' 月用量紀錄';
+    var shown = log.filter(function (r) { return monthOfTs(r.ts) === month; });
+    if (shown.length === 0) { ul.appendChild(el('li', 'log-empty', month === thisMonth() ? '還沒有用量紀錄。' : '這個月沒有用量紀錄。')); return; }
+    shown.forEach(function (r) {
+      var d = new Date(r.ts);
+      var li = el('li');
+      li.appendChild(el('span', 'log-text', (d.getMonth() + 1) + '/' + d.getDate() + '　' + r.name + '　用了 ' + qty(r.qty)));
+      var box = el('div', 'log-actions');
+      box.appendChild(actionBtn('編輯', '', function () { openLogEdit(r); }));
+      box.appendChild(actionBtn('刪除', 'danger', function () { removeLog(r); }));
+      li.appendChild(box);
+      ul.appendChild(li);
+    });
+  }
+
+  // ---------- 資料保存（瀏覽器 localStorage） ----------
+  function dataOut() {
+    var by = {}; Object.keys(itemsBy).forEach(function (k) { if (itemsBy[k].length) by[k] = itemsBy[k]; });
+    return { version: 2, budget: budgetFor(thisMonth()), budgets: budgets, itemsBy: by, log: log.slice(0, LOG_KEPT) };
+  }
+  function setFail(failed) { $('saveStatus').hidden = !failed; }
+
+  function save() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(dataOut()));
+      setFail(false);
+    } catch (e) {
+      setFail(true);
+    }
+  }
+  function ownItems() { return itemsBy[month] || (itemsBy[month] = []); }
+  function numOr0(v) { var n = Number(v); return isFinite(n) && n >= 0 ? n : 0; }
+  // 把備份／儲存的內容整理成安全的資料；格式不對回傳 null
+  function parseData(d) {
+    if (!d || typeof d !== 'object' || !(Array.isArray(d.items) || (d.itemsBy && typeof d.itemsBy === 'object'))) return null;
+    var out = { budget: null, budgets: {}, itemsBy: {}, log: null };
+    if (d.budget !== '' && d.budget !== null && d.budget !== undefined && isFinite(Number(d.budget)) && Number(d.budget) >= 0) out.budget = String(d.budget);
+    if (d.budgets && typeof d.budgets === 'object') Object.keys(d.budgets).forEach(function (k) {
+      var v = d.budgets[k];
+      if (/^\d{4}-\d{2}$/.test(k) && (v === '' || (v !== null && isFinite(Number(v)) && Number(v) >= 0))) out.budgets[k] = String(v);
+    });
+    else if (out.budget !== null) out.budgets[thisMonth()] = out.budget;     // 舊版備份只有一個預算：當作本月
+    function mapItems(arr) {
+      return arr.filter(function (x) { return x && typeof x.name === 'string' && x.name.trim() !== ''; }).map(function (x) {
+        return {
+          id: typeof x.id === 'string' ? x.id : String(Date.now() + Math.random()),
+          name: x.name.slice(0, 60),
+          category: typeof x.category === 'string' ? x.category.slice(0, 30) : '',
+          stock: numOr0(x.stock), target: numOr0(x.target), price: numOr0(x.price), used: numOr0(x.used),
+          expiry: /^\d{4}-\d{2}-\d{2}$/.test(x.expiry || '') ? x.expiry : '',
+          done: x.done === true,
+          buyQty: x.buyQty !== null && x.buyQty !== undefined && isFinite(Number(x.buyQty)) && Number(x.buyQty) >= 0 ? Number(x.buyQty) : null,
+          boughtQty: numOr0(x.boughtQty), doneNeed: numOr0(x.doneNeed)
+        };
+      });
+    }
+    if (d.itemsBy && typeof d.itemsBy === 'object') Object.keys(d.itemsBy).forEach(function (k) { if (/^\d{4}-\d{2}$/.test(k) && Array.isArray(d.itemsBy[k])) out.itemsBy[k] = mapItems(d.itemsBy[k]); });
+    else out.itemsBy[thisMonth()] = mapItems(d.items);          // 舊版備份只有一份清單：當作本月
+    if (Array.isArray(d.log)) {
+      out.log = d.log.filter(function (r) { return r && typeof r.name === 'string' && isFinite(Number(r.ts)) && isFinite(Number(r.qty)); })
+                     .map(function (r) { return { ts: Number(r.ts), name: r.name.slice(0, 60), qty: Number(r.qty), iid: typeof r.iid === 'string' ? r.iid : '' }; });
+    }
+    return out;
+  }
+  function load() {
+    var raw = null;
+    try {
+      localStorage.setItem(KEY + '-test', '1');
+      localStorage.removeItem(KEY + '-test');
+      raw = localStorage.getItem(KEY);
+    } catch (e) { setFail(true); return; }
+    if (!raw) return;
+    var d;
+    try { d = JSON.parse(raw); } catch (e) { return; }
+    var r = parseData(d);
+    if (!r) return;
+    budgets = r.budgets;
+    budget = budgetFor(month); $('budget').value = fmtBudget(budget);
+    itemsBy = r.itemsBy; items = ownItems();
+    if (r.log) log = r.log;
+  }
+
+  // ---------- 新增／編輯物品 ----------
+  var editingId = null;
+  function find(id) { for (var i = 0; i < items.length; i++) if (items[i].id === id) return items[i]; return null; }
+
+  function openItem(id) {
+    editingId = id || null;
+    var it = id ? find(id) : null;
+    $('itemDialogTitle').textContent = it ? '編輯物品' : '新增物品';
+    $('fName').value = it ? it.name : '';
+    $('fCategory').value = it ? it.category : '';
+    $('fStock').value = it ? it.stock : '';
+    $('fTarget').value = it ? it.target : '';
+    $('fPrice').value = it ? it.price : '';
+    $('fExpiry').value = it ? it.expiry : '';
+    $('itemError').textContent = '';
+    openDlg($('itemDialog'));
+    $('fName').focus();
+  }
+  function readNum(id, label) {
+    var v = half($(id).value);
+    if (v === '') return { error: '請填寫' + label };
+    var n = Number(v);
+    if (!isFinite(n) || n < 0) return { error: label + '請輸入 0 或以上的數字' };
+    return { value: n };
+  }
+  $('itemForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = $('fName').value.trim();
+    if (name === '') { $('itemError').textContent = '請填寫品名'; $('fName').focus(); return; }
+    var stock = readNum('fStock', '目前庫存'); if (stock.error) { $('itemError').textContent = stock.error; return; }
+    var target = readNum('fTarget', '目標庫存'); if (target.error) { $('itemError').textContent = target.error; return; }
+    var price = readNum('fPrice', '單價'); if (price.error) { $('itemError').textContent = price.error; return; }
+    var data = { name: name, category: $('fCategory').value.trim(), stock: stock.value, target: target.value, price: price.value, expiry: $('fExpiry').value };
+    var it = editingId ? find(editingId) : null;
+    if (it) {
+      it.name = data.name; it.category = data.category; it.stock = data.stock;
+      it.target = data.target; it.price = data.price; it.expiry = data.expiry;
+    } else {
+      data.id = String(Date.now()) + Math.random().toString(36).slice(2, 7);
+      data.used = 0; data.buyQty = null; data.boughtQty = 0; data.doneNeed = 0; data.done = false;
+      items.push(data);
+    }
+    closeDlg($('itemDialog'));
+    save(); render();
+  });
+  $('itemCancel').addEventListener('click', function () { closeDlg($('itemDialog')); });
+  $('addBtn').addEventListener('click', function () { openItem(null); });
+  $('addBtn2').addEventListener('click', function () { openItem(null); });
+  $('buyFilter').addEventListener('change', renderBuy);
+
+  var deletingId = null;
+  var deletingFrom = 'items';
+  function removeItem(id, from) {
+    var it = find(id);
+    if (!it) return;
+    deletingId = id; deletingLog = null; deletingFrom = from || 'items';
+    $('delMsg').textContent = '確定要刪除「' + it.name + '」嗎？';
+    openDlg($('delDialog'));
+  }
+  var deletingLog = null;       // 正在確認刪除的用量紀錄
+  function removeLog(r) {
+    var it = findLogItem(r);
+    deletingLog = r; deletingId = null;
+    $('delMsg').textContent = it
+      ? '確定要刪除這筆用量紀錄嗎？「' + r.name + '」的庫存會加回 ' + qty(r.qty) + '。'
+      : '確定要刪除這筆用量紀錄嗎？（物品已刪除，只會刪除紀錄）';
+    openDlg($('delDialog'));
+  }
+  $('delCancel').addEventListener('click', function () { deletingId = null; deletingLog = null; closeDlg($('delDialog')); });
+  $('delOk').addEventListener('click', function () {
+    var id = deletingId; deletingId = null;
+    var rec = deletingLog; deletingLog = null;
+    closeDlg($('delDialog'));
+    if (rec) {
+      var owner = findLogItem(rec), li = log.indexOf(rec), usedBefore = owner ? owner.used : 0;
+      if (owner) { owner.stock = round2(owner.stock + rec.qty); owner.used = round2(Math.max(0, owner.used - rec.qty)); }
+      log = log.filter(function (x) { return x !== rec; });
+      save(); render();
+      showUndo({ kind: 'log', where: 'log', rec: rec, idx: li, owner: owner, usedBefore: usedBefore, text: '已刪除這筆用量（' + rec.name + '　用了 ' + qty(rec.qty) + '）' });
+      return;
+    }
+    if (!id) return;
+    var ii = -1; items.forEach(function (x, k) { if (x.id === id) ii = k; });
+    if (ii < 0) return;
+    var gone = items[ii];
+    items = itemsBy[month] = items.filter(function (x) { return x.id !== id; });
+    save(); render();
+    showUndo({ kind: 'item', where: deletingFrom, item: gone, idx: ii, m: month, text: '已刪除「' + gone.name + '」' });
+  });
+
+  // ---------- 復原（刪除後 10 秒內） ----------
+  var undo = null, undoTimer = null;
+  var UNDO_AT = { items: 'itemsBody', buy: 'buyBody', log: 'logBody' };
+  function hideUndo() { clearTimeout(undoTimer); undo = null; document.querySelectorAll('.undo-bar').forEach(function (b) { b.hidden = true; }); }
+  function showUndo(u) {
+    hideUndo(); undo = u;
+    var host = $(UNDO_AT[u.where]), b = host.querySelector(':scope > .undo-bar');
+    if (!b) {
+      b = el('div', 'undo-bar'); b.setAttribute('role', 'status'); b.appendChild(el('span', '', ''));
+      var bt = el('button', 'btn-small', '復原'); bt.type = 'button'; bt.addEventListener('click', doUndo); b.appendChild(bt);
+      host.insertBefore(b, host.firstChild);
+    }
+    b.querySelector('span').textContent = u.text; b.hidden = false;
+    undoTimer = setTimeout(hideUndo, 10000);
+  }
+  function doUndo() {
+    var u = undo; if (!u) return; hideUndo();
+    if (u.kind === 'item') {
+      var arr = itemsBy[u.m] || (itemsBy[u.m] = []);
+      arr.splice(Math.min(u.idx, arr.length), 0, u.item);
+      if (u.m === month) items = arr;
+    } else {
+      log.splice(Math.min(u.idx, log.length), 0, u.rec);
+      if (u.owner) { u.owner.stock = round2(Math.max(0, u.owner.stock - u.rec.qty)); u.owner.used = u.usedBefore; }
+    }
+    save(); render();
+  }
+
+  // ---------- 記錄用量 ----------
+  var usingId = null;
+  var editingLog = null;        // 正在編輯的用量紀錄（null 表示新增用量）
+  function openUse(id) {
+    var it = find(id);
+    if (!it) return;
+    editingLog = null;
+    usingId = id;
+    $('useDialogTitle').textContent = '記錄用量';
+    $('useInfo').textContent = it.name + '　目前庫存 ' + qty(it.stock);
+    $('fUse').value = '';
+    $('useError').textContent = '';
+    openDlg($('useDialog'));
+    $('fUse').focus();
+  }
+  // 用量紀錄對應的物品：優先用 id，舊紀錄沒有 id 就用品名找
+  function findLogItem(r) {
+    if (r.iid) { var a = find(r.iid); if (a) return a; }
+    for (var k = 0; k < items.length; k++) if (items[k].name === r.name) return items[k];
+    return null;
+  }
+  function openLogEdit(r) {
+    var it = findLogItem(r);
+    editingLog = r; usingId = it ? it.id : null;
+    $('useDialogTitle').textContent = '編輯用量';
+    $('useInfo').textContent = r.name + '　原本用了 ' + qty(r.qty) + (it ? '　目前庫存 ' + qty(it.stock) : '（物品已刪除，只會修改紀錄）');
+    $('fUse').value = r.qty;
+    $('useError').textContent = '';
+    openDlg($('useDialog'));
+    $('fUse').focus();
+  }
+  $('useForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (editingLog) {
+      var rec = editingLog, target = findLogItem(rec);
+      var v2 = half($('fUse').value), n2 = Number(v2);
+      if (v2 === '' || !isFinite(n2) || n2 <= 0) { $('useError').textContent = '請輸入大於 0 的用量'; return; }
+      if (target) {
+        var avail = round2(target.stock + rec.qty);        // 這筆改掉後可用的庫存
+        if (n2 > avail) { $('useError').textContent = '用量不能超過可用庫存（' + qty(avail) + '）'; return; }
+        target.stock = round2(avail - n2);
+        target.used = round2(Math.max(0, target.used - rec.qty + n2));
+      }
+      rec.qty = n2;
+      editingLog = null;
+      closeDlg($('useDialog'));
+      save(); render();
+      return;
+    }
+    var it = find(usingId);
+    if (!it) { closeDlg($('useDialog')); return; }
+    var v = half($('fUse').value);
+    var n = Number(v);
+    if (v === '' || !isFinite(n) || n <= 0) { $('useError').textContent = '請輸入大於 0 的用量'; return; }
+    if (n > it.stock) { $('useError').textContent = '用量不能超過目前庫存（' + qty(it.stock) + '）'; return; }
+    it.stock = round2(it.stock - n);
+    it.used = round2(it.used + n);
+    log.unshift({ ts: Date.now(), name: it.name, qty: n, iid: it.id });
+    if (log.length > LOG_KEPT) log.length = LOG_KEPT;
+    closeDlg($('useDialog'));
+    save(); render();
+  });
+  $('useCancel').addEventListener('click', function () { editingLog = null; closeDlg($('useDialog')); });
+
+  // ---------- 規劃預算 ----------
+  function sizeBudget() {
+    var n = $('budget').value.length;
+    var v = $('budget').value, c = (v.match(/,/g) || []).length;
+    $('budget').style.width = v ? (Math.max(1, v.length - c * 0.5) + 0.5) + 'ch' : '7.5em';
+  }
+  function fmtBudget(raw) {
+    var parts = raw.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
+  }
+  $('budget').addEventListener('input', function () {
+    var el = this, v = half(el.value).replace(/[,\s]/g, '');
+    if (v !== '' && !/^\d*\.?\d*$/.test(v)) {
+      $('budgetError').textContent = '請輸入 0 或以上的數字';
+      budget = ''; budgets[month] = '';
+    } else {
+      $('budgetError').textContent = '';
+      budget = v; budgets[month] = v;
+      var pos = el.selectionStart, keep = el.value.slice(0, pos).replace(/,/g, '').length;
+      el.value = fmtBudget(v);
+      var n = 0, np = 0;
+      while (np < el.value.length && n < keep) { if (el.value[np] !== ',') n++; np++; }
+      try { el.setSelectionRange(np, np); } catch (x) {}
+    }
+    sizeBudget(); save(); render();
+  });
+
+  // ---------- 備份與還原 ----------
+  function backupText() {
+    return JSON.stringify(dataOut());
+  }
+  $('expBtn').addEventListener('click', function () {
+    $('expText').value = backupText();
+    $('expMsg').textContent = '';
+    openDlg($('expDialog'));
+  });
+  $('expClose').addEventListener('click', function () { closeDlg($('expDialog')); });
+  $('expCopy').addEventListener('click', function () {
+    var t = $('expText');
+    function done(ok) { $('expMsg').textContent = ok ? '已複製。到另一邊按「匯入備份」貼上即可。' : '無法自動複製，請長按或全選上面的文字後手動複製。'; }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t.value).then(function () { done(true); }, function () { fallbackCopy(); });
+        return;
+      }
+    } catch (e) {}
+    fallbackCopy();
+    function fallbackCopy() {
+      var ok = false;
+      try { t.focus(); t.select(); t.setSelectionRange(0, t.value.length); ok = document.execCommand('copy'); } catch (e) {}
+      done(ok);
+    }
+  });
+  // 在網頁預覽（嵌入框）裡，瀏覽器不允許下載，這時只留「複製」
+  try { if (window.self !== window.top) $('expDownload').hidden = true; } catch (e) { $('expDownload').hidden = true; }
+  $('expDownload').addEventListener('click', function () {
+    try {
+      var d = new Date(), pad = function (n) { return (n < 10 ? '0' : '') + n; };
+      var name = '物品庫存備份-' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '.json';
+      var url = URL.createObjectURL(new Blob([$('expText').value], { type: 'application/json' }));
+      var a = document.createElement('a');
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      $('expMsg').textContent = '已開始下載。若沒有出現檔案，請改按「複製」。';
+    } catch (e) {
+      $('expMsg').textContent = '這個瀏覽器無法下載，請改按「複製」。';
+    }
+  });
+
+  $('impBtn').addEventListener('click', function () {
+    $('impText').value = ''; $('impFile').value = ''; $('impError').textContent = '';
+    openDlg($('impDialog'));
+  });
+  $('impCancel').addEventListener('click', function () { closeDlg($('impDialog')); });
+  $('impFile').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () { $('impText').value = String(rd.result || ''); $('impError').textContent = ''; };
+    rd.onerror = function () { $('impError').textContent = '讀不到這個檔案，請改用貼上備份文字。'; };
+    rd.readAsText(f);
+  });
+  $('impOk').addEventListener('click', function () {
+    var txt = $('impText').value.trim();
+    if (txt === '') { $('impError').textContent = '請先選擇備份檔案，或貼上備份文字。'; return; }
+    var d;
+    try { d = JSON.parse(txt); } catch (e) { $('impError').textContent = '備份內容讀不懂，請確認是完整的備份文字。'; return; }
+    var r = parseData(d);
+    if (!r) { $('impError').textContent = '這不是本頁匯出的備份。'; return; }
+    itemsBy = r.itemsBy; items = ownItems();
+    log = r.log || [];
+    budgets = r.budgets;
+    budget = budgetFor(month);
+    $('budget').value = fmtBudget(budget);
+    $('budgetError').textContent = '';
+    sizeBudget();
+    closeDlg($('impDialog'));
+    save(); render();
+  });
+
+  // ---------- 搜尋與篩選 ----------
+  $('search').addEventListener('input', renderItems);
+  $('statusFilter').addEventListener('change', renderItems);
+
+  // ---------- 沿用上個月（只沿用物品清單） ----------
+  var copyAsk = false;
+  function resetCopy() { copyAsk = false; $('copyPrev').textContent = '沿用上個月'; $('copyMsg').textContent = ''; }
+  $('copyPrev').addEventListener('click', function () {
+    var prev = shiftMonth(month, -1), src = itemsBy[prev] || [], p = prev.split('-'), pt = Number(p[0]) + ' 年 ' + Number(p[1]) + ' 月';
+    if (!src.length) { $('copyMsg').textContent = pt + '沒有物品清單可以沿用。'; copyAsk = false; this.textContent = '沿用上個月'; return; }
+    if (items.length && !copyAsk) { copyAsk = true; this.textContent = '再按一次，覆蓋這個月'; $('copyMsg').textContent = '這個月已經有物品，沿用會取代它。'; return; }
+    copyAsk = false; this.textContent = '沿用上個月';
+    items = itemsBy[month] = src.map(function (it) {
+      return { id: String(Date.now()) + Math.random().toString(36).slice(2, 7), name: it.name, category: it.category, stock: it.stock, target: it.target, price: it.price, used: 0, expiry: it.expiry, done: false, buyQty: null, boughtQty: 0, doneNeed: 0 };
+    });
+    save(); render(); $('copyMsg').textContent = '已沿用' + pt + '的物品清單（預算和用量紀錄不沿用）。';
+  });
+
+  function showMonth() {
+    var p = month.split('-');
+    $('monthLabel').textContent = Number(p[0]) + ' 年 ' + Number(p[1]) + ' 月';
+    $('monthNote').hidden = month === thisMonth();
+    items = ownItems(); resetCopy();
+    budget = budgetFor(month); $('budget').value = fmtBudget(budget); $('budgetError').textContent = ''; sizeBudget();
+    render();
+  }
+  $('prevM').addEventListener('click', function () { month = shiftMonth(month, -1); showMonth(); });
+  $('nextM').addEventListener('click', function () { month = shiftMonth(month, 1); showMonth(); });
+  load();
+  sizeBudget();
+  showMonth();
+</script>
+</body>
+</html>

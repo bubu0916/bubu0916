@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>日常花費</title>
+<style>
+  /* 版面：同「預算規劃」 */
+  :root {
+    --green: #385749; --ink: #293831; --bg: #F7F5EF; --card: #FFFEFA; --line: #D3DDD3;
+    --tint: #E8EEE5; --muted: #5f6f66; --warn: #b3261e; --amber: #8a5a00;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; font-size: 16px; line-height: 1.6; }
+  .hero { background: #234838; color: #fff; padding-block: 30px 26px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .hero-in { max-width: 960px; margin: 0 auto; }
+  .hero-in { text-align: center; }
+  .hero h1 { margin: 0 0 6px; font-size: 1.6rem; text-wrap: balance; }
+  .hero p { margin: 0; color: #dbe7de; text-wrap: balance; }
+  .wrap { max-width: 960px; margin: 0 auto; padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+  .card.tint { background: var(--tint); border-color: transparent; }
+  .label { font-size: .92rem; color: var(--muted); }
+  .value { font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.3; overflow-wrap: anywhere; }
+  .value.neg { color: var(--warn); }
+  .sub { font-size: .85rem; color: var(--muted); }
+  button, input, select { font: inherit; }
+  input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); min-height: 44px; }
+  input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .btn { padding: 10px 16px; border-radius: 10px; border: 1px solid var(--green); background: var(--green); color: #fff; font-weight: 600; cursor: pointer; min-height: 44px; }
+  .btn.ghost { background: #fff; color: var(--green); border-color: var(--line); }
+  .btn.danger { background: #fff; color: var(--warn); border-color: #e3c3c0; }
+  .btn.small { white-space: nowrap; flex: none; padding: 6px 12px; min-height: 36px; font-size: .92rem; }
+  .btn:disabled { opacity: .55; cursor: default; }
+
+  .monthbar { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 14px; }
+  .monthbar .m { min-width: 9.5em; text-align: center; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .monthbar .btn { padding: 8px 14px; }
+
+  .income-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-bottom: 12px; }
+  .income-row.has-total { grid-template-columns: minmax(0, 5fr) minmax(0, 2fr); }
+  .merged-card { padding: 0; overflow: hidden; }
+  .src-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; background: var(--tint); }
+  .src-head { flex-wrap: wrap; }
+  .src-btns { display: flex; gap: 8px; }
+  .src-head .label { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+  .src-list { display: grid; gap: 8px; margin-bottom: 8px; }
+  .src-item { display: flex; gap: 8px; align-items: center; }
+  .src-item input { flex: 1 1 auto; min-width: 0; }
+  .slots { display: flex; flex-wrap: wrap; gap: 10px; padding: 12px 14px 14px; }
+  .slot { border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: var(--card); min-width: 0; flex: 1 1 140px; }
+  .slot:focus-within { border-color: var(--green); }
+  .slot select { min-height: 36px; padding: 4px 8px; border: 0; border-radius: 999px; background: var(--tint); color: var(--green); font-weight: 600; font-size: .95rem; }
+  .slot .amt { display: flex; align-items: baseline; gap: 4px; }
+  .slot .amt span { font-weight: 700; color: var(--muted); }
+  .slot .amt input { min-height: 36px; padding: 4px 0; border: 0; border-radius: 0; background: transparent; outline: none; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 0; }
+  .plans-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; }
+  .plans-head .label { font-weight: 700; color: var(--ink); font-size: 1.05rem; }
+  .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .plan { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; cursor: pointer; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .plan:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .plan[aria-checked="true"] { background: var(--tint); border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+  .plan .ratio { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .plan .cust { display: flex; align-items: center; gap: 4px; }
+  .plan .cust input { min-height: 36px; padding: 4px 2px; text-align: center; font-weight: 700; font-size: 1.05rem; min-width: 0; border-radius: 8px; }
+  .plan .pct { font-size: .85rem; color: var(--muted); }
+  .plan .row { display: flex; justify-content: space-between; gap: 6px; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .plan .row span:first-child { color: var(--muted); }
+  .buckets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 12px 0 6px; }
+  .bucket { padding: 12px 14px; }
+  .bk-name { font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .bk-name::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+  .bk-link { font: inherit; font-weight: 700; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 4px; }
+  .bk-link::after { content: " ↓"; font-weight: 400; color: var(--muted); }
+  .bk-link:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 4px; }
+  @keyframes flashCard { from { box-shadow: 0 0 0 3px var(--green); } to { box-shadow: 0 0 0 3px transparent; } }
+  .flash { animation: flashCard 1.4s ease-out; }
+  @media (prefers-reduced-motion: reduce) { .flash { animation: none; box-shadow: 0 0 0 3px var(--green); } }
+  .bk-val { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 4px; overflow-wrap: anywhere; }
+  .bk-val small { font-size: .85rem; font-weight: 400; color: var(--muted); }
+  .bk-bar { height: 8px; border-radius: 999px; background: var(--tint); overflow: hidden; margin: 8px 0 6px; }
+  .bk-bar i { display: block; height: 100%; width: 0; background: var(--c); border-radius: 999px; }
+  .bucket.over .bk-bar i { background: var(--warn); }
+  .bucket.over .bk-sub { color: var(--warn); }
+  .bk-sub { font-size: .88rem; color: var(--muted); }
+  .bk-note { margin: 0 0 14px; font-size: .85rem; color: var(--muted); }
+  .slots.rows { flex-direction: column; flex-wrap: nowrap; gap: 0; padding: 4px 14px 0; }
+  .rows .slot { flex: none; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; padding: 10px 0; }
+  .rows .slot select { flex: 0 1 46%; min-width: 0; }
+  .rows .slot .amt { flex: 1 1 auto; justify-content: flex-end; min-width: 0; }
+  .rows .slot .amt span { margin-left: auto; }
+  .rows .slot .amt input { text-align: right; flex: 0 1 8.5em; width: 8.5em; min-width: 0; }
+  .extra-wrap { padding: 8px 14px 0; display: flex; flex-direction: column; gap: 8px; }
+  .extra-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .extra-row .ex-name { flex: 1 1 40%; min-width: 0; min-height: 36px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--ink); font-size: .95rem; }
+  .extra-row .amt { flex: 1 1 40%; min-width: 0; display: flex; align-items: baseline; gap: 4px; justify-content: flex-end; }
+  .extra-row .amt span { font-weight: 700; color: var(--muted); }
+  .extra-row .ex-amt { flex: 1 1 auto; width: 100%; min-width: 0; min-height: 36px; padding: 4px 0; border: 0; background: transparent; outline: none; text-align: right; font-size: 1.1rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ex-del { flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--tint); color: var(--muted); font-size: 1.1rem; cursor: pointer; }
+  .extra-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ex-del { display: none; }
+  .extra-wrap.editing .ex-del { display: inline-block; }
+  #editExtra[aria-pressed="true"] { background: var(--green); color: #fff; border-color: var(--green); }
+  .rows-total { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 14px 14px; font-variant-numeric: tabular-nums; }
+  .rows-total strong { font-size: 1.3rem; }
+  #needPanel .pair, #invPanel .pair, #savPanel .pair { margin-bottom: 0; }
+  .grp-note { margin: 0; padding: 0 14px 14px; text-align: center; color: var(--muted); font-size: .85rem; line-height: 1.5; }
+  .pair .src-head { justify-content: center; }
+  .pair .src-head .label { text-align: center; }
+  .pair .extra-row .ex-name { text-align: center; }
+  .pair .extra-btns { justify-content: center; }
+  .pair .rows-total { justify-content: center; gap: 14px; }
+  #needPanel .panel-head, #invPanel .panel-head, #savPanel .panel-head { justify-content: flex-start; }
+  #needPanel .collapse-btn, #invPanel .collapse-btn, #savPanel .collapse-btn { justify-content: flex-start; }
+  #planPanel .alloc { margin-bottom: 0; }
+  #planPanel .plans { margin-bottom: 12px; }
+  #planPanel .note-s { margin: 0 0 10px; }
+  .alloc-title { font-weight: 700; margin-bottom: 8px; }
+  .alloc-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--tint); gap: 2px; }
+  .alloc-bar i { display: block; height: 100%; min-width: 0; }
+  .alloc-bar i:nth-child(1) { background: #234838; }
+  .alloc-bar i:nth-child(2) { background: #6f8f7c; }
+  .alloc-bar i:nth-child(3) { background: #b9cdbd; }
+  .alloc-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+  .alloc-item .n { font-size: .9rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .alloc-item .n::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+  .alloc-item .v { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .alloc-item .p { font-size: .85rem; color: var(--muted); }
+  .pair { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; align-items: start; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .stat { padding: 12px 14px; }
+  .stat .value { font-size: 1.3rem; }
+  .grid2.one { grid-template-columns: minmax(0, 1fr); }
+  .total-card { background: #234838; border-color: #234838; color: #fff; display: flex; flex-direction: column; justify-content: center; }
+  .total-card .label { color: #dbe7de; }
+  .big-total { margin-top: 10px; text-align: center; align-items: center; padding: 8px 14px; }
+  .big-total .label { font-size: .8rem; }
+  .big-total .value { font-size: 1.3rem; }
+  .big-total .bt-sub { display: none; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+
+  .progress-wrap { margin: 2px 0 12px; }
+  .progress-label { display: flex; justify-content: space-between; gap: 10px; font-size: .92rem; color: var(--muted); margin-bottom: 6px; flex-wrap: wrap; }
+  .progress { height: 12px; border-radius: 999px; background: var(--tint); overflow: hidden; }
+  .progress-fill { height: 100%; width: 0; background: var(--green); border-radius: 999px; }
+  .progress-fill.over { background: var(--warn); }
+
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 14px; overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 12px 16px; background: var(--tint); }
+  .panel-head h2 { margin: 0; font-size: 1.1rem; }
+  .panel-body { padding: 14px 16px; }
+  .collapse-btn { display: inline-flex; align-items: center; gap: 8px; background: none; border: 0; padding: 0; color: var(--ink); cursor: pointer; text-align: left; }
+  .collapse-btn .tog { font-size: .9rem; color: var(--muted); }
+  .panel.collapsed .panel-body { display: none; }
+  .head-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .head-tools select { width: auto; min-width: 8em; }
+
+  .cats { display: grid; gap: 12px; }
+  .cat-row .top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  .cat-row .amt { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .cat-bar { height: 10px; background: var(--tint); border-radius: 999px; overflow: hidden; }
+  .cat-bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
+  .empty { text-align: center; color: var(--muted); padding: 22px 12px; }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: var(--tint); font-weight: 600; font-size: .92rem; padding: 10px 12px; text-align: center; }
+  td { padding: 10px 12px; border-top: 1px solid var(--line); text-align: center; vertical-align: middle; }
+  td.note { text-align: left; overflow-wrap: anywhere; }
+  td.num, th.num { font-variant-numeric: tabular-nums; }
+  .tag { display: inline-block; padding: 1px 10px; border-radius: 999px; background: var(--tint); color: var(--green); font-size: .85rem; font-weight: 600; }
+  .actions { display: flex; gap: 6px; justify-content: center; }
+  .credit { margin: 22px 0 0; text-align: center; font-size: .85rem; color: var(--muted); }
+  .formula { margin: 0 0 12px; color: var(--muted); }
+  .note-s { margin: 0 0 12px; color: var(--muted); font-size: .92rem; }
+
+  dialog { border: 0; border-radius: 16px; padding: 0; width: min(440px, calc(100vw - 32px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; color: var(--ink); background: var(--card); position: fixed; inset: 0; margin: auto; z-index: 1000; }
+  dialog::backdrop { background: rgba(35, 56, 46, .45); }
+  dialog.dlg-fallback { box-shadow: 0 0 0 100vmax rgba(35, 56, 46, .45); }
+  dialog:not([open]) { display: none; }
+  .dlg-body { padding: 18px 18px 6px; }
+  .dlg-body h3 { margin: 0 0 8px; font-size: 1.15rem; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-weight: 600; margin-bottom: 4px; font-size: .95rem; }
+  .err { color: var(--warn); min-height: 1.3em; margin: 0 0 8px; }
+  .undo-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 8px; padding: 8px 12px; border-radius: 10px; background: var(--tint); font-size: .95rem; }
+  .undo-bar[hidden] { display: none; }
+  .undo-bar span { min-width: 0; overflow-wrap: anywhere; }
+  .dlg-act { display: flex; gap: 10px; justify-content: flex-end; padding: 12px 18px 16px; position: sticky; bottom: 0; background: var(--card); border-top: 1px solid var(--line); }
+  textarea { width: 100%; min-height: 140px; font: .82rem/1.4 ui-monospace, Menlo, Consolas, monospace; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
+
+  @media (max-width: 899px) {
+    #needPanel .panel-body, #invPanel .panel-body, #savPanel .panel-body { padding: 8px; }
+    .pair { gap: 6px; }
+    .pair .src-head { flex-direction: column; align-items: stretch; gap: 6px; padding: 8px; }
+    .pair .src-head .label { font-size: .95rem; text-align: center; }
+    .pair .src-btns { flex-direction: column; gap: 4px; }
+    .pair .src-btns .btn { width: 100%; min-height: 32px; padding: 2px 4px; font-size: .78rem; }
+    .pair .slots.rows { padding: 2px 8px 0; }
+    .pair .rows .slot { flex-direction: column; align-items: stretch; gap: 2px; padding: 8px 0; }
+    .pair .rows .slot select { flex: none; width: 100%; font-size: .78rem; padding: 2px 2px 2px 6px; }
+    .pair .rows .slot .amt { justify-content: flex-end; }
+    .pair .rows .slot .amt span { margin-left: 0; }
+    .pair .rows .slot .amt input { flex: 1 1 auto; width: 100%; font-size: .9rem; }
+    .pair .extra-wrap { padding: 2px 8px 0; }
+    .pair .extra-row { flex-wrap: wrap; gap: 2px; padding: 8px 0; }
+    .pair .extra-row .ex-name { flex: 1 1 100%; font-size: .8rem; padding: 2px 6px; min-height: 32px; }
+    .pair .extra-row .amt { flex: 1 1 0; }
+    .pair .extra-row .ex-amt { font-size: .9rem; }
+    .pair .ex-del { width: 24px; height: 24px; font-size: .9rem; }
+    .pair .extra-btns { flex-direction: column; gap: 4px; }
+    .pair .extra-btns .btn { width: 100%; min-height: 32px; padding: 2px 4px; font-size: .78rem; }
+    .grp-note { padding: 0 8px 10px; font-size: .75rem; }
+    .pair .rows-total { flex-direction: column; align-items: flex-end; gap: 0; padding: 8px; }
+    .pair .rows-total strong { font-size: 1rem; }
+  }
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 1.4rem; }
+    .grid2, .grid3, .income-row { gap: 10px; }
+    .income-row.has-total { grid-template-columns: minmax(0, 1fr); }
+    .buckets { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .alloc-list { gap: 6px; }
+    .alloc-item .v { font-size: 1rem; }
+    .stats, .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .stats > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .stat .value { font-size: 1.2rem; }
+    .grid3 { grid-template-columns: 1fr 1fr; }
+    .grid3 > :last-child { grid-column: 1 / -1; }
+    .value { font-size: 1.4rem; }
+    .slot { flex: 1 1 calc(50% - 5px); }
+    .head-tools { width: 100%; }
+    .head-tools select { flex: 1 1 120px; min-width: 0; }
+    .table-scroll { overflow: visible; }
+    table, tbody, tr, td { display: block; }
+    thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    tbody tr { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+    tbody tr:last-child { margin-bottom: 0; }
+    td { border: 0; padding: 5px 0; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; text-align: right; }
+    td::before { content: attr(data-label); flex: none; color: var(--muted); font-size: .9rem; text-align: left; }
+    td.note { text-align: right; }
+    td.act { display: block; margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+    td.act::before { content: none; }
+    td.act .actions .btn { flex: 1 1 auto; min-height: 40px; }
+    td.empty { display: block; text-align: center; }
+    td.empty::before { content: none; }
+    .dlg-act .btn { flex: 1 1 auto; }
+  }
+  .gp .pair { margin-bottom: 0; }
+  .gp .panel-head, .gp .collapse-btn { justify-content: flex-start; }
+  .plan-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: stretch; }
+  .plan-box .label { display: block; margin: 0; font-weight: 400; }
+  .plan-box strong { display: block; line-height: 1.5; }
+  .bud-val { display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: 700; line-height: 1.5; font-variant-numeric: tabular-nums; }
+  .bud-val span { flex: none; }
+  .bud-box input { width: 1ch; min-width: 1ch; min-height: 0; height: 1.5em; padding: 0; border: 0; border-radius: 0; background: transparent; text-align: left; font: inherit; line-height: inherit; color: var(--ink); outline: none; }
+  .bud-box.locked { background: var(--tint); }
+  .bud-box:focus-within { border-color: var(--green); }
+  .plan-box { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; min-width: 0; text-align: center; background: var(--card); }
+  .plan-box .label { font-size: .85rem; color: var(--muted); }
+  .plan-box strong { font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+  .plan-box.over strong, .plan-box.over .label { color: var(--warn); }
+  .plan-bar { height: 10px; border-radius: 999px; background: var(--tint); margin-top: 12px; overflow: hidden; }
+  .plan-bar i { display: block; height: 100%; width: 0; background: var(--green); border-radius: 999px; transition: width .4s ease; }
+  #planNote { margin: 12px 0 0; }
+  .plan-bar.over i { background: var(--warn); }
+  @media (max-width: 640px) { .plan-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .plan-grid .bud-box { grid-column: 1 / -1; } }
+  .head-link { margin-left: auto; font-size: .9rem; font-weight: 600; color: var(--green); text-decoration: none; padding: 6px 4px; white-space: nowrap; }
+  .head-link:hover { text-decoration: underline; }
+  .copy-row { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: -4px 0 14px; }
+  .copy-msg { font-size: .9rem; color: var(--muted); text-align: center; min-height: 1.4em; }
+  .grand { margin-bottom: 14px; }
+  @media (max-width: 899px) { .gp .panel-body { padding: 8px; } }
+  /* 網頁選單 */
+  .sitenav { background:#F7F5EF; border-bottom:1px solid #D3DDD3; }
+  .sitenav-in { max-width:520px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding-block:10px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); }
+  .sitenav a { flex:0 0 calc((100% - 24px) / 4); min-width:0; box-sizing:border-box; padding:6px 0; border-radius:999px; border:1px solid #D3DDD3; background:#FFFEFA; color:#385749; font-size:.8rem; font-weight:600; text-decoration:none; white-space:nowrap; line-height:1.5; text-align:center; }
+  @media (max-width:360px) { .sitenav-in { gap:6px; } .sitenav a { flex-basis:calc((100% - 18px) / 4); font-size:.72rem; } }
+  .sitenav a:hover { background:#E8EEE5; }
+  .sitenav a:focus-visible { outline:2px solid #385749; outline-offset:2px; }
+  .sitenav a[aria-current="page"] { background:#385749; border-color:#385749; color:#fff; }
+  .add-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: end; }
+  .add-form .field { margin: 0; min-width: 0; }
+  .add-form input, .add-form select { width: 100%; min-width: 0; max-width: 100%; }
+  .add-form input[type=date] { -webkit-appearance: none; appearance: none; }
+  .add-form .btn { grid-column: 1 / -1; }
+  .field label { display: block; font-weight: 600; margin-bottom: 4px; font-size: .95rem; }
+  @media (max-width: 640px) { .add-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+  @media (max-width: 480px) { .add-form { grid-template-columns: minmax(0, 1fr); } }
+  .picks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+  .pick { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); cursor: pointer; min-height: 44px; }
+  .pick input { flex: none; width: 20px; min-width: 0; height: 20px; min-height: 0; padding: 0; accent-color: var(--green); }
+  .pick span { min-width: 0; display: flex; flex-direction: column; line-height: 1.3; font-weight: 600; }
+  .pick small { font-weight: 400; color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+  .cat-spend { margin-top: 12px; padding: 4px 12px; border: 1px solid #e3c3c0; border-radius: 12px; background: #fdf4f3; }
+  .cat-spend[hidden] { display: none; }
+  .cs-title { padding: 6px 0 2px; font-size: .85rem; color: var(--warn); font-weight: 600; }
+  .cs-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  .cs-title + div .cs-row:first-child { border-top: 0; }
+  .cs-name { font-weight: 600; flex: none; }
+  .cs-amt { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px 10px; text-align: right; min-width: 0; }
+  .cs-over { color: var(--warn); font-weight: 700; white-space: nowrap; }
+  .pick:has(input:checked) { background: var(--tint); border-color: var(--green); }
+  .picks-label { margin: 12px 0 0; font-size: .85rem; color: var(--muted); }
+  .cat-row { display: grid; grid-template-columns: 5.5em minmax(0, 1fr); gap: 2px 10px; align-items: center; padding: 6px 0; font-variant-numeric: tabular-nums; }
+  .cat-row .bar { height: 10px; border-radius: 999px; background: var(--tint); overflow: hidden; }
+  .cat-row .bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
+  .cat-row b { grid-column: 2; text-align: right; font-size: .95rem; }
+  .cat-row b small { display: block; font-weight: 400; color: var(--muted); font-size: .8rem; }
+  .day { border-top: 1px solid var(--line); }
+  .day:first-child { border-top: 0; }
+  .day-head { display: flex; justify-content: space-between; gap: 10px; padding: 10px 16px; background: var(--tint); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .day-head span:last-child { white-space: nowrap; }
+  .ent { display: flex; align-items: center; gap: 10px; padding: 8px 16px; border-bottom: 1px solid var(--line); min-width: 0; }
+  .ent:last-child { border-bottom: 0; }
+  .ent .tag { flex: none; padding: 2px 10px; border-radius: 999px; background: var(--tint); color: var(--green); font-size: .85rem; font-weight: 600; }
+  .ent .nm { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; color: var(--muted); font-size: .95rem; }
+  .ent .am { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .ent .ex-del { display: inline-block; }
+  .cal-head, .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .cal-head { margin-bottom: 4px; text-align: center; font-size: .85rem; color: var(--muted); font-weight: 600; }
+  .cal-day { position: relative; min-width: 0; min-height: 56px; padding: 4px 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .cal-day .n { font-size: .95rem; font-weight: 600; line-height: 1.3; }
+  .cal-day .s { font-size: .72rem; line-height: 1.2; color: var(--green); font-weight: 700; white-space: nowrap; }
+  .cal-day.blank { visibility: hidden; border: 0; cursor: default; }
+  .cal-day.today .n { background: var(--green); color: #fff; border-radius: 999px; padding: 0 7px; }
+  .cal-day.sel { border-color: var(--green); box-shadow: inset 0 0 0 2px var(--green); }
+  .cal-day:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .cal-day .s.sm { font-size: .56rem; letter-spacing: -.03em; }
+  @media (max-width: 480px) { .cal-day { padding: 4px 0; } .cal-day .s { font-size: .62rem; letter-spacing: -.03em; } .cal-day .s.sm { font-size: .5rem; } }
+  @media (max-width: 340px) { .cal-day .s { font-size: .56rem; } .cal-day .s.sm { font-size: .48rem; } }
+  .cal-tip { margin: 10px 0 0; font-size: .85rem; color: var(--muted); text-align: center; }
+  @media (max-width: 480px) { .cal-grid, .cal-head { gap: 3px; } .cal-day { min-height: 52px; } .cal-day .s { font-size: .66rem; } }
+  .empty { margin: 0; padding: 18px 16px; text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="hero"><div class="hero-in">
+  <h1>🧾 日常花費</h1>
+  <p>每天記一筆，月底不心慌🌿</p>
+</div></header>
+<noscript><p style="margin:0;padding:12px 16px;background:#FFF4E5;color:#8a5a00;text-align:center;font-size:.95rem;line-height:1.6">這個預覽沒有執行網頁程式，所以日期、按鈕和資料都無法使用。請改用 Safari 或 Chrome 開啟檔案，或使用網路預覽連結。</p></noscript>
+<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">預算規劃</a><a href="生活預算.html">生活預算</a><a href="日常花費.html" aria-current="page">日常花費</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
+
+<main class="wrap">
+  <div class="monthbar">
+    <button class="btn ghost" type="button" id="prevM" aria-label="上個月">‹</button>
+    <div class="m" id="monthLabel" aria-live="polite"></div>
+    <button class="btn ghost" type="button" id="nextM" aria-label="下個月">›</button>
+  </div>
+
+  <p class="err" id="saveNote" role="alert" hidden>這次未能自動儲存，請到「預算規劃」頁按「備份全部資料」留存。</p>
+
+  <section class="panel" id="p_plan">
+    <div class="panel-head">
+      <button type="button" class="collapse-btn" data-target="p_plan" aria-expanded="true"><h2>花費規劃</h2><span class="tog">收起</span></button>
+    </div>
+    <div class="panel-body">
+      <div class="plan-grid">
+        <div class="plan-box bud-box"><label class="label" for="budIn">本月花費預算</label><div class="bud-val"><span>$</span><input id="budIn" type="text" inputmode="numeric" autocomplete="off" placeholder="0"></div></div>
+        <div class="plan-box"><div class="label">已花費</div><strong id="planSpent">$0</strong></div>
+        <div class="plan-box"><div class="label" id="planLeftLbl">還剩</div><strong id="planLeft">$0</strong></div>
+      </div>
+      <div class="plan-bar"><i id="planBar"></i></div>
+      <div class="picks" id="picks" role="group" aria-label="計入項目（生活預算的大標題）"></div>
+      <div class="cat-spend" id="catSpend" hidden><div class="cs-title">超出預算</div><div id="catSpendList"></div></div>
+      <p class="note-s" id="planNote">填入本月花費預算，就能看到每天還可以花多少。</p>
+    </div>
+  </section>
+
+  <section class="panel" id="p_cal">
+    <div class="panel-head">
+      <button type="button" class="collapse-btn" data-target="p_cal" aria-expanded="true"><h2>花費日曆</h2><span class="tog">收起</span></button>
+    </div>
+    <div class="panel-body">
+      <div class="cal-head" aria-hidden="true"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+      <div class="cal-grid" id="calGrid"></div>
+      <p class="cal-tip">點一天，就能記錄或查看那天的花費。日曆只算「花費規劃」裡勾選的項目。</p>
+    </div>
+  </section>
+
+  <section class="panel" id="p_sel">
+    <div class="panel-head"><h2 id="selTitle">選擇日期</h2><strong id="selSum"></strong></div>
+    <div class="panel-body">
+      <div class="add-form">
+        <div class="field"><label for="nCat">類別</label><select id="nCat"></select></div>
+        <div class="field"><label for="nNote">項目</label><input id="nNote" type="text" maxlength="20" placeholder="例如 午餐"></div>
+        <div class="field"><label for="nAmt">金額</label><input id="nAmt" type="text" inputmode="numeric" autocomplete="off" placeholder="0"></div>
+        <button type="button" class="btn" id="addBtn">+ 新增花費</button>
+      </div>
+      <p class="err" id="addErr" role="alert"></p>
+      <div class="undo-bar" id="undoBar" role="status" aria-live="polite" hidden><span id="undoText">已刪除</span><button type="button" class="btn ghost small" id="undoBtn">復原</button></div>
+    </div>
+    <div id="listBody"></div>
+  </section>
+
+  <div class="stats">
+    <div class="card stat"><div class="label">今日花費</div><div class="value" id="sToday">$0</div></div>
+    <div class="card stat"><div class="label">本月日均</div><div class="value" id="sAvg">$0</div></div>
+    <div class="card stat"><div class="label" id="sCanL">每日還可花</div><div class="value" id="sCan">—</div></div>
+  </div>
+
+  <section class="panel" id="bkPanel">
+    <div class="panel-head"><h2>備份與還原</h2></div>
+    <div class="panel-body">
+      <p style="margin:0 0 12px;color:#5f6f66;font-size:.92rem;line-height:1.6;text-align:left">這一頁的記錄只存在目前使用的瀏覽器，換手機、換電腦、換瀏覽器或清除瀏覽器資料後就看不到了。8 頁的資料要一起到「預算規劃」頁備份，一個檔案就能全部帶走。</p>
+      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#385749;color:#fff;font-weight:600;text-decoration:none">前往預算規劃備份全部資料 ›</a>
+      <div hidden style="display:none"><button type="button" class="btn ghost" id="expBtn">匯出備份</button><button type="button" class="btn ghost" id="impBtn">匯入備份</button></div>
+    </div>
+  </section>
+
+  <p class="credit">© 2026 鯊鯊說心事｜IG：鯊鯊說心事</p>
+</main>
+
+<dialog id="expDlg" aria-labelledby="expTitle">
+  <div class="dlg-body">
+    <h3 id="expTitle">匯出備份</h3>
+    <p class="note-s">把下面的文字複製起來，存到備忘錄或傳給自己。到新的瀏覽器按「匯入備份」貼上即可。</p>
+    <textarea id="expText" readonly aria-label="備份內容"></textarea>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="expClose">關閉</button><button type="button" class="btn ghost" id="expDl">下載檔案</button><button type="button" class="btn" id="expCopy">複製</button></div>
+</dialog>
+
+<dialog id="delDlg" aria-labelledby="delTitle">
+  <div class="dlg-body">
+    <h3 id="delTitle">確定要刪除此筆紀錄嗎?</h3>
+    <p class="note-s" id="delInfo"></p>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="delCancel">取消</button><button type="button" class="btn danger" id="delOk">刪除</button></div>
+</dialog>
+
+<dialog id="editDlg" aria-labelledby="editTitle">
+  <div class="dlg-body">
+    <h3 id="editTitle">編輯花費</h3>
+    <div class="field"><label for="eDate">日期</label><input id="eDate" type="date"></div>
+    <div class="field"><label for="eCat">類別</label><select id="eCat"></select></div>
+    <div class="field"><label for="eNote">項目</label><input id="eNote" type="text" maxlength="20" placeholder="例如 午餐"></div>
+    <div class="field"><label for="eAmt">金額</label><input id="eAmt" type="text" inputmode="numeric" autocomplete="off" placeholder="0"></div>
+    <p class="err" id="editErr" role="alert"></p>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="editCancel">取消</button><button type="button" class="btn" id="editSave">儲存</button></div>
+</dialog>
+
+<dialog id="impDlg" aria-labelledby="impTitle">
+  <div class="dlg-body">
+    <h3 id="impTitle">匯入備份</h3>
+    <p class="note-s">匯入後，會用備份取代目前的所有記錄。</p>
+    <div class="field"><label for="impFile">選擇備份檔</label><input id="impFile" type="file" accept=".json,.txt,application/json,text/plain"></div>
+    <div class="field"><label for="impText">或貼上備份文字</label><textarea id="impText"></textarea></div>
+    <p class="err" id="impErr" role="alert"></p>
+  </div>
+  <div class="dlg-act"><button type="button" class="btn ghost" id="impCancel">取消</button><button type="button" class="btn" id="impOk">匯入</button></div>
+</dialog>
+
+
+<script>
+/* 輸入法組字保護：組字中不改寫欄位內容，避免數字重複 */
+(function () {
+  var sel = 'input[inputmode="numeric"],input[inputmode="decimal"]';
+  function isNum(t) { return t && t.matches && t.matches(sel); }
+  document.addEventListener('compositionstart', function (e) { if (isNum(e.target)) e.target._ime = 1; }, true);
+  document.addEventListener('input', function (e) {
+    var t = e.target; if (!isNum(t)) return;
+    if (t._ime || e.isComposing) { e.stopImmediatePropagation(); return; }
+    if (/[０-９．，]/.test(t.value)) t.value = t.value.replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); }).replace(/．/g, '.').replace(/，/g, ',');
+  }, true);
+  document.addEventListener('compositionend', function (e) {
+    var t = e.target; if (!isNum(t) || !t._ime) return;
+    setTimeout(function () { t._ime = 0; t.dispatchEvent(new Event('input', { bubbles: true })); }, 0);
+  }, true);
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+  var KEY = 'daily-ledger-v1', PLAN_KEY = 'household-expense-v1', MAX = 3000;
+  var CATS = ['貸款', '生活開銷', '家庭開銷', '休閒娛樂'];                 // 和生活預算的四個大標題一致
+  var CAT_PFX = { '貸款': 'loan', '生活開銷': 'life', '家庭開銷': 'fam', '休閒娛樂': 'lei' };
+  var LEGACY = { '餐飲': '生活開銷', '交通': '生活開銷', '購物': '生活開銷', '其他': '生活開銷', '日用品': '家庭開銷', '醫療': '家庭開銷', '娛樂': '休閒娛樂' };
+  var $ = function (id) { return document.getElementById(id); };
+  var data = { version: 1, entries: [], budget: {}, sel: CATS.slice() };
+  var month = '', sel = '', saveFailed = false;
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function shiftMonth(m, n) { var p = m.split('-'); var d = new Date(Number(p[0]), Number(p[1]) - 1 + n, 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1); }
+  function monthText(m) { var p = m.split('-'); return p[0] + ' 年 ' + Number(p[1]) + ' 月'; }
+  function daysIn(m) { var p = m.split('-'); return new Date(Number(p[0]), Number(p[1]), 0).getDate(); }
+  function dayText(d) { var p = d.split('-'), w = '日一二三四五六'[new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])).getDay()]; return Number(p[1]) + ' 月 ' + Number(p[2]) + ' 日（' + w + '）'; }
+  function money(n) { var r = Math.round(n); return (r < 0 ? '-$' : '$') + Math.abs(r).toLocaleString('en-US'); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function dig(v) { return String(v || '').replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); }).replace(/[^\d]/g, ''); }   // 全形數字（注音輸入）也能讀成金額
+  function amt(v) { v = Number(v); return isFinite(v) && v >= 0 ? Math.round(v) : 0; }
+  function isDate(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(new Date(s + 'T00:00:00').getTime()); }
+
+  function parseData(d) {
+    if (!d || typeof d !== 'object' || !Array.isArray(d.entries)) return null;
+    var out = { version: 1, entries: [], budget: {}, sel: CATS.slice() };
+    if (Array.isArray(d.sel)) { var sv = CATS.filter(function (c) { return d.sel.indexOf(c) >= 0; }); out.sel = sv; }
+    if (d.budget && typeof d.budget === 'object') Object.keys(d.budget).forEach(function (k) { if (/^\d{4}-\d{2}$/.test(k)) out.budget[k] = amt(d.budget[k]); });
+    d.entries.slice(0, MAX).forEach(function (x, i) {
+      if (!x || !isDate(String(x.d))) return;
+      out.entries.push({ id: String(x.id || ('e' + i + Date.now().toString(36))).slice(0, 30), d: x.d, c: CATS.indexOf(x.c) >= 0 ? x.c : (LEGACY[x.c] || '生活開銷'), n: String(x.n || '').slice(0, 20), a: amt(x.a) });
+    });
+    return out;
+  }
+  function load() { try { var raw = localStorage.getItem(KEY); if (raw) { var p = parseData(JSON.parse(raw)); if (p) data = p; } } catch (e) {} }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(data)); saveFailed = false; } catch (e) { saveFailed = true; }
+    $('saveNote').hidden = !saveFailed;
+  }
+  function readPlan(m) {                              // 預算規劃（同一個瀏覽器）的收入與「花費」目標；讀不到回傳 null
+    try {
+      var raw = localStorage.getItem(PLAN_KEY); if (!raw) return { income: 0, v: null };
+      var d = JSON.parse(raw), sl = (d && d.slots) || {}, b = 0, best = null;
+      if (Array.isArray(sl[m])) best = m; else Object.keys(sl).forEach(function (k) { if (k < m && (best === null || k > best)) best = k; });
+      if (best !== null && Array.isArray(sl[best])) sl[best].forEach(function (x) { b += Number(x && x.amt) || 0; });
+      var pl = d.plan || {}, P = { '532': [5, 3, 2], '631': [6, 3, 1], '333': [3, 3, 3] }, v = null;
+      if (pl.mode === 'custom' && Array.isArray(pl.amounts)) { v = Number(pl.amounts[0]) || 0; }
+      else if (b > 0) { var pr = P[pl.mode] || P['532']; v = Math.round(b * pr[0] / (pr[0] + pr[1] + pr[2])); }
+      return { income: b, v: v > 0 ? Math.round(v) : null, mode: pl.mode };
+    } catch (e) { return { income: 0, v: null }; }
+  }
+  function writePlan(v, income) {                     // 這裡改的花費預算，同步成預算規劃的「花費」目標（自訂）
+    try {
+      var raw = localStorage.getItem(PLAN_KEY), d = raw ? JSON.parse(raw) : null;
+      if (!d || typeof d !== 'object') d = { version: 2, items: [] };
+      if (!Array.isArray(d.items)) d.items = [];
+      var pl = d.plan && typeof d.plan === 'object' ? d.plan : (d.plan = { mode: '532', custom: [4, 3, 3] });
+      var wasCustom = pl.mode === 'custom' && Array.isArray(pl.amounts) && pl.amounts.length === 3;
+      if (!wasCustom) {                                  // 從 5:3:2 等比例切到自訂：另外兩格先帶入原本比例算出的金額
+        var P = { '532': [5, 3, 2], '631': [6, 3, 1], '333': [3, 3, 3] }, pr = P[pl.mode] || P['532'], sm = pr[0] + pr[1] + pr[2];
+        pl.amounts = income > 0 ? pr.map(function (x) { return Math.round(income * x / sm); }) : [0, 0, 0];
+        pl.edited = [1, 0];
+      }
+      if (!Array.isArray(pl.edited) || pl.edited.length !== 2) pl.edited = [1, 0];
+      pl.amounts[0] = v; pl.mode = 'custom';
+      var e = pl.edited.filter(function (x) { return x !== 0; }); e.push(0); pl.edited = e.slice(-2);
+      localStorage.setItem(PLAN_KEY, JSON.stringify(d));
+    } catch (e) {}
+  }
+  function budW(v) { var c = (v.match(/,/g) || []).length; return (Math.max(1, v.length - c * 0.5) + 0.5) + 'ch'; }
+  var DS_KEY = 'daily-spend-v1';                       // 生活預算的資料：非本月的預算存在這裡，兩頁共用
+  function dsRead() { try { var d = JSON.parse(localStorage.getItem(DS_KEY)); if (d && typeof d === 'object' && d.extras && typeof d.extras === 'object') { if (!d.budget || typeof d.budget !== 'object') d.budget = {}; return d; } } catch (e) {} return { version: 1, extras: {}, budget: {} }; }
+  function budgetOf(m) {                              // 和生活預算同一套：本月跟預算規劃，其他月份各自填
+    var bd = dsRead().budget;
+    if (m !== todayISO().slice(0, 7)) return { v: bd[m] != null ? bd[m] : 0 };
+    var pp = readPlan(m);
+    if (pp.income > 0) return { v: pp.v != null ? pp.v : 0, plan: pp.v };
+    if (pp.v != null) return { v: pp.v, plan: pp.v };
+    return { v: bd[m] != null ? bd[m] : 0 };
+  }
+  function setBudget(v) {
+    var ds = dsRead(), inc = readPlan(month).income;
+    if (month !== todayISO().slice(0, 7)) ds.budget[month] = v;
+    else if (inc > 0 || v > 0 || readPlan(month).v != null) { writePlan(v, inc); delete ds.budget[month]; } else ds.budget[month] = v;
+    try { localStorage.setItem(DS_KEY, JSON.stringify(ds)); saveFailed = false; } catch (e) { saveFailed = true; }
+    $('saveNote').hidden = !saveFailed;
+  }
+  function monthEntries() { return data.entries.filter(function (e) { return e.d.slice(0, 7) === month && data.sel.indexOf(e.c) >= 0; }); }
+  function planned(c) {                               // 生活預算這個大標題本月的規劃金額（新增的項目會自動算進來）
+    try {
+      var ds = JSON.parse(localStorage.getItem('daily-spend-v1')), t = 0;
+      [1, 2, 3].forEach(function (n) { var a = ds.extras[CAT_PFX[c] + n]; a = a && a[month]; if (Array.isArray(a)) a.forEach(function (x) { t += Number(x && x.amt) || 0; }); });
+      return t;
+    } catch (e) { return 0; }
+  }
+
+  function resetDate() { var t = todayISO(); sel = t.slice(0, 7) === month ? t : month + '-01'; }
+  function render() {
+    $('monthLabel').textContent = monthText(month);
+    var list = monthEntries(), total = 0, today = todayISO(), todaySum = 0, byCat = {};
+    list.forEach(function (e) { total += e.a; byCat[e.c] = (byCat[e.c] || 0) + e.a; if (e.d === today) todaySum += e.a; });
+    var B = budgetOf(month), drv = 0; data.sel.forEach(function (c) { drv += planned(c); });
+    var none = !data.sel.length, derived = none || drv > 0, bud = derived ? drv : B.v, left = bud - total;           // 有勾選項目的生活預算規劃時，預算＝勾選項目加總
+    
+    if (document.activeElement !== $('budIn') || derived) $('budIn').value = bud ? bud.toLocaleString('en-US') : (derived ? '0' : '');
+    $('budIn').style.width = budW($('budIn').value);
+    $('budIn').readOnly = derived; $('budIn').parentNode.parentNode.classList.toggle('locked', derived);
+    $('planSpent').textContent = money(total);
+    $('planLeftLbl').textContent = bud > 0 && left < 0 ? '超出' : '還剩'; $('planLeft').textContent = bud > 0 ? money(Math.abs(left)) : '$0';
+    var over = bud > 0 && left < 0;
+    $('planLeft').parentNode.classList.toggle('over', over); $('planBar').parentNode.classList.toggle('over', over);
+    $('planBar').style.width = (bud > 0 ? Math.min(100, total * 100 / bud) : 0) + '%';
+    var isCur = month === today.slice(0, 7), dn = daysIn(month), passed = isCur ? Number(today.slice(8)) : (month < today.slice(0, 7) ? dn : 0);
+    $('planNote').textContent = none ? '目前沒有勾選任何項目，所以預算和花費都是 0。' : bud > 0 ? (over ? '本月已超出預算 ' + money(-left) + '。' : '已用掉 ' + Math.round(total * 100 / bud) + '%。') + (derived ? '預算是勾選項目在生活預算的規劃加總，勾選不同項目會跟著變。' : '勾選的項目在生活預算還沒有規劃金額，這裡可以自己填。') : '填入本月花費預算，就能看到每天還可以花多少。';
+    $('sToday').textContent = money(todaySum);
+    $('sAvg').textContent = passed > 0 ? money(total / passed) : '$0';
+    if (isCur && bud > 0) { var rest = dn - passed + 1; $('sCanL').textContent = '每日還可花'; $('sCan').textContent = left > 0 ? money(left / rest) : '$0'; }
+    else { $('sCanL').textContent = '每日還可花'; $('sCan').textContent = '—'; }
+    var dayTot = {}, mx = 0; list.forEach(function (e) { dayTot[e.d] = (dayTot[e.d] || 0) + e.a; });
+    Object.keys(dayTot).forEach(function (k) { if (dayTot[k] > mx) mx = dayTot[k]; });
+    var grid = $('calGrid'); grid.textContent = '';
+    var p = month.split('-'), first = new Date(Number(p[0]), Number(p[1]) - 1, 1).getDay();
+    for (var i = 0; i < first; i++) grid.appendChild(el('span', 'cal-day blank'));
+    for (var dd = 1; dd <= dn; dd++) (function (dd) {
+      var ds = month + '-' + pad(dd), t = dayTot[ds] || 0;
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'cal-day' + (ds === today ? ' today' : '') + (ds === sel ? ' sel' : '');
+      b.setAttribute('aria-label', dayText(ds) + (t ? '，花費 ' + money(t) : '，沒有花費')); if (ds === sel) b.setAttribute('aria-pressed', 'true');
+      b.appendChild(el('span', 'n', String(dd)));
+      if (t) { b.appendChild(el('span', 's' + (String(t).length >= 6 ? ' sm' : ''), String(t))); b.style.background = 'rgba(56,87,73,' + (0.08 + 0.3 * t / mx).toFixed(2) + ')'; }
+      b.addEventListener('click', function () { sel = ds; render(); });
+      grid.appendChild(b);
+    })(dd);
+    var pk = $('picks'); pk.textContent = ''; var csRows = [];
+    CATS.forEach(function (c) {
+      var lab = el('label', 'pick'), cb2 = document.createElement('input'); cb2.type = 'checkbox'; cb2.checked = data.sel.indexOf(c) >= 0;
+      cb2.addEventListener('change', function () {
+        var on = this.checked, cur = data.sel.filter(function (x) { return x !== c; });
+        if (on) cur.push(c);
+        data.sel = CATS.filter(function (x) { return cur.indexOf(x) >= 0; }); save(); render();
+      });
+      var sp = el('span', '', c), pl = planned(c), used = 0;           // 這個月這一類實際花了多少（不管有沒有勾選）
+      data.entries.forEach(function (x) { if (x.c === c && x.d.slice(0, 7) === month) used += x.a; });
+      if (pl > 0) sp.appendChild(el('small', '', '規劃 ' + money(pl)));
+      if (pl > 0 && used > pl) {                                       // 超出預算：只有超出的類別才列出來
+        var row = el('div', 'cs-row'), right = el('span', 'cs-amt');
+        row.appendChild(el('span', 'cs-name', c));
+        right.appendChild(el('span', '', money(used) + ' / ' + money(pl)));
+        right.appendChild(el('span', 'cs-over', '超出 ' + money(used - pl)));
+        row.appendChild(right); csRows.push(row);
+      }
+      lab.appendChild(cb2); lab.appendChild(sp); pk.appendChild(lab);
+    });
+    var cs = $('catSpend'), csl = $('catSpendList'); csl.textContent = '';
+    csRows.forEach(function (r) { csl.appendChild(r); }); cs.hidden = !csRows.length;
+    $('selTitle').textContent = dayText(sel); $('selSum').textContent = money(dayTot[sel] || 0);
+    var lb = $('listBody'); lb.textContent = '';
+    var dl = list.filter(function (e) { return e.d === sel; });
+    if (!dl.length) lb.appendChild(el('p', 'empty', '這天還沒有花費，上面新增一筆吧。'));
+    dl.slice().reverse().forEach(function (e) {
+      var r = el('div', 'ent'); r.appendChild(el('span', 'tag', e.c)); r.appendChild(el('span', 'nm', e.n)); r.appendChild(el('span', 'am', money(e.a)));
+      var del = document.createElement('button'); del.type = 'button'; del.className = 'ex-del'; del.textContent = '×'; del.setAttribute('aria-label', '刪除這筆');
+      del.addEventListener('click', function () { delId = e.id; $('delInfo').textContent = e.c + (e.n ? '・' + e.n : '') + '　' + money(e.a); openDlg($('delDlg')); });
+      var edb = el('button', 'btn ghost small', '編輯'); edb.type = 'button'; edb.setAttribute('aria-label', '編輯這筆');
+      edb.addEventListener('click', function () { openEdit(e); });
+      r.appendChild(edb); r.appendChild(del); lb.appendChild(r);
+    });
+  }
+  CATS.forEach(function (c) { var o = document.createElement('option'); o.value = c; o.textContent = c; $('nCat').appendChild(o); });
+  CATS.forEach(function (c) { var o = document.createElement('option'); o.value = c; o.textContent = c; $('eCat').appendChild(o); });
+  var editId = null;                                  // 正在編輯的那一筆
+  function openEdit(e) {
+    editId = e.id; $('eDate').value = e.d; $('eCat').value = e.c; $('eAmt').value = e.a ? e.a.toLocaleString('en-US') : ''; $('eNote').value = e.n; $('editErr').textContent = '';
+    openDlg($('editDlg'));
+  }
+  $('eAmt').addEventListener('input', function () { var dg = dig(this.value).slice(0, 9); this.value = dg ? Number(dg).toLocaleString('en-US') : ''; });
+  $('editCancel').addEventListener('click', function () { editId = null; closeDlg($('editDlg')); });
+  $('editSave').addEventListener('click', function () {
+    var it = data.entries.filter(function (x) { return x.id === editId; })[0];
+    if (!it) { closeDlg($('editDlg')); return; }
+    var d = $('eDate').value, a = Number(dig($('eAmt').value)) || 0;
+    if (!isDate(d)) { $('editErr').textContent = '請選擇日期。'; return; }
+    if (a <= 0) { $('editErr').textContent = '請輸入金額。'; return; }
+    it.d = d; it.c = $('eCat').value; it.a = a; it.n = $('eNote').value.trim().slice(0, 20);
+    if (data.sel.indexOf(it.c) < 0) data.sel = CATS.filter(function (x) { return data.sel.indexOf(x) >= 0 || x === it.c; });
+    sel = d; month = d.slice(0, 7); editId = null;
+    save(); closeDlg($('editDlg')); render();
+  });
+  $('nAmt').addEventListener('input', function () { var dg = dig(this.value).slice(0, 9); this.value = dg ? Number(dg).toLocaleString('en-US') : ''; });
+  $('addBtn').addEventListener('click', function () {
+    var d = sel, a = Number(dig($('nAmt').value)) || 0, err = $('addErr');
+    if (!isDate(d)) { err.textContent = '請選擇日期。'; return; }
+    if (a <= 0) { err.textContent = '請輸入金額。'; return; }
+    if (data.entries.length >= MAX) { err.textContent = '記錄已達上限，請先到「預算規劃」頁備份全部資料，再刪除舊資料。'; return; }
+    err.textContent = '';
+    if (data.sel.indexOf($('nCat').value) < 0) data.sel = CATS.filter(function (x) { return data.sel.indexOf(x) >= 0 || x === $('nCat').value; });
+    data.entries.push({ id: 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), d: d, c: $('nCat').value, n: $('nNote').value.trim().slice(0, 20), a: a });
+    $('nAmt').value = ''; $('nNote').value = ''; save();
+    render(); $('nAmt').focus();
+  });
+  $('budIn').addEventListener('input', function () {
+    if (this.readOnly) return;
+    var dg = dig(this.value).slice(0, 9); this.value = dg ? Number(dg).toLocaleString('en-US') : '';
+    this.style.width = budW(this.value); setBudget(dg ? Number(dg) : 0); render();
+  });
+  window.addEventListener('storage', function () { render(); });
+  window.addEventListener('focus', function () { render(); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
+  $('prevM').addEventListener('click', function () { month = shiftMonth(month, -1); resetDate(); render(); });
+  $('nextM').addEventListener('click', function () { month = shiftMonth(month, 1); resetDate(); render(); });
+  Array.prototype.forEach.call(document.querySelectorAll('.collapse-btn'), function (b) {
+    b.addEventListener('click', function () {
+      var p = $(b.getAttribute('data-target')), c = p.classList.toggle('collapsed');
+      b.setAttribute('aria-expanded', String(!c)); b.querySelector('.tog').textContent = c ? '展開' : '收起';
+    });
+  });
+  function openDlg(d) { try { if (typeof d.showModal === 'function') { d.showModal(); return; } } catch (e) {} d.setAttribute('open', ''); d.classList.add('dlg-fallback'); }
+  function closeDlg(d) { try { if (typeof d.close === 'function') { d.close(); return; } } catch (e) {} d.removeAttribute('open'); d.classList.remove('dlg-fallback'); }
+  var inFrame = false; try { inFrame = window.self !== window.top; } catch (e) { inFrame = true; }
+  if (inFrame) $('expDl').hidden = true;
+  $('expBtn').addEventListener('click', function () { $('expText').value = JSON.stringify(data); openDlg($('expDlg')); });
+  $('expClose').addEventListener('click', function () { closeDlg($('expDlg')); });
+  $('expCopy').addEventListener('click', function () {
+    var ta = $('expText'), b = $('expCopy');
+    function done() { b.textContent = '已複製'; setTimeout(function () { b.textContent = '複製'; }, 1500); }
+    function fallback() { ta.focus(); ta.select(); try { if (document.execCommand('copy')) done(); } catch (e) {} }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, fallback); else fallback();
+  });
+  $('expDl').addEventListener('click', function () {
+    try { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([$('expText').value], { type: 'application/json' })); a.download = '日常花費備份_' + todayISO() + '.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); } catch (e) {}
+  });
+  var delId = null;                                   // 等待確認刪除的那一筆
+  $('delCancel').addEventListener('click', function () { delId = null; closeDlg($('delDlg')); });
+  $('delOk').addEventListener('click', function () {
+    var id = delId; delId = null; closeDlg($('delDlg'));
+    if (!id) return;
+    var idx = -1; data.entries.forEach(function (x, k) { if (x.id === id) idx = k; });
+    if (idx < 0) return;
+    var gone = data.entries.splice(idx, 1)[0]; save(); render();
+    showUndo(gone, idx);
+  });
+  var undoItem = null, undoIdx = -1, undoTimer = null;   // 刪除後 10 秒內可以復原
+  function hideUndo() { clearTimeout(undoTimer); undoTimer = null; undoItem = null; $('undoBar').hidden = true; }
+  function showUndo(item, idx) {
+    clearTimeout(undoTimer); undoItem = item; undoIdx = idx;
+    $('undoText').textContent = '已刪除「' + item.c + (item.n ? '・' + item.n : '') + '　' + money(item.a) + '」';
+    $('undoBar').hidden = false;
+    undoTimer = setTimeout(hideUndo, 10000);
+  }
+  $('undoBtn').addEventListener('click', function () {
+    if (!undoItem) return;
+    data.entries.splice(Math.min(undoIdx, data.entries.length), 0, undoItem);
+    sel = undoItem.d; month = undoItem.d.slice(0, 7);
+    hideUndo(); save(); render();
+  });
+  $('impBtn').addEventListener('click', function () { $('impText').value = ''; $('impFile').value = ''; $('impErr').textContent = ''; openDlg($('impDlg')); });
+  $('impCancel').addEventListener('click', function () { closeDlg($('impDlg')); });
+  $('impFile').addEventListener('change', function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    var r = new FileReader(); r.onload = function () { $('impText').value = String(r.result || ''); }; r.readAsText(f);
+  });
+  $('impOk').addEventListener('click', function () {
+    var txt = $('impText').value.trim(); if (!txt) { $('impErr').textContent = '請選擇備份檔，或貼上備份文字。'; return; }
+    var p = null; try { p = parseData(JSON.parse(txt)); } catch (e) {}
+    if (!p) { $('impErr').textContent = '這不是有效的備份內容，請確認有複製完整。'; return; }
+    data = p; save(); closeDlg($('impDlg')); render();
+  });
+  load();
+  month = todayISO().slice(0, 7); resetDate(); render();
+})();
+</script>
+</body>
+</html>
