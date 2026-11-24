@@ -15,14 +15,14 @@
 
 <style>
   :root {
-    --green: #385749;
-    --ink: #293831;
-    --muted: #5f6f66;
-    --bg: #F7F5EF;
-    --card: #FFFEFA;
-    --line: #D3DDD3;
-    --head: #E8EEE5;
-    --tint: #E8EEE5;
+    --green: #566F62;
+    --ink: #5B4B44;
+    --muted: #8A766C;
+    --bg: #FFF9F2;
+    --card: #FFFDF8;
+    --line: #EADFD2;
+    --head: #F3ECE0;
+    --tint: #F3ECE0;
     --warn: #b3261e;
     --amber: #8a5a00;
   }
@@ -38,7 +38,7 @@
   }
   .wrap { max-width: 960px; margin: 0 auto; padding: 0 18px; }
 
-  .hero { text-align: center; background: #234838; color: #fff; padding: 52px 0 44px; margin-bottom: 30px; }
+  .hero { text-align: center; background: #566F62; color: #fff; padding: 52px 0 44px; margin-bottom: 30px; }
   .hero h1 { margin: 0 0 12px; font-size: 2.3rem; font-weight: 700; letter-spacing: 0.04em; line-height: 1.25; }
   .hero p { margin: 0; font-size: 1.05rem; opacity: 0.95; text-wrap: balance; }
 
@@ -54,7 +54,7 @@
   .budget-sign { flex: none; }
   .budget-input { -moz-appearance: textfield; display: block; width: 5ch; margin-top: 0; padding: 0; border: 0; background: transparent; font: inherit; font-size: 2.4rem; font-weight: 500; line-height: 1.3; color: var(--ink); min-width: 0; }
   .budget-input::-webkit-outer-spin-button, .budget-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .budget-input::placeholder { color: #a3aea6; }
+  .budget-input::placeholder { color: #B8A79C; }
   .budget-input:focus, .budget-input:focus-visible { outline: none; box-shadow: none; }
   .card .form-error { min-height: 0; margin: 0; }
   .card .value.neg { color: var(--warn); }
@@ -81,20 +81,20 @@
 
   button { font: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   .btn-primary { background: var(--green); color: #fff; border: 0; border-radius: 12px; padding: 14px 22px; font-size: 1.05rem; white-space: nowrap; }
-  .btn-primary:hover { background: #2d4639; }
-  .btn-secondary { background: var(--card); color: var(--ink); border: 1px solid #B4C2B5; border-radius: 12px; padding: 12px 22px; font-size: 1rem; }
+  .btn-primary:hover { background: #4A6155; }
+  .btn-secondary { background: var(--card); color: var(--ink); border: 1px solid #D5E0D9; border-radius: 12px; padding: 12px 22px; font-size: 1rem; }
   .btn-secondary:hover { background: var(--head); }
-  button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #7aa38a; outline-offset: 2px; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #566F62; outline-offset: 2px; }
 
   .filters { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; margin-bottom: 18px; }
   .filters input[type=search] { flex: 1 1 220px; max-width: 360px; }
   .filters input, .filters select, .field input {
     font: inherit; color: var(--ink); background: var(--card);
-    border: 1px solid #B4C2B5; border-radius: 10px; padding: 12px 14px; min-width: 0;
+    border: 1px solid #D5E0D9; border-radius: 10px; padding: 12px 14px; min-width: 0;
   }
   .filters select { padding-right: 10px; }
   .head-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
-  .head-tools select { font: inherit; color: var(--ink); background: var(--card); border: 1px solid #B4C2B5; border-radius: 10px; padding: 12px 10px 12px 14px; }
+  .head-tools select { font: inherit; color: var(--ink); background: var(--card); border: 1px solid #D5E0D9; border-radius: 10px; padding: 12px 10px 12px 14px; }
 
   .table-scroll { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; min-width: 640px; }
@@ -106,7 +106,7 @@
   .items-table .actions, .buy-table .actions { justify-content: center; }
   .chk-box { width: 20px; height: 20px; accent-color: var(--green); cursor: pointer; vertical-align: middle; }
   th.chk { width: 64px; }
-  .qty-input { width: 84px; font: inherit; color: var(--ink); background: var(--card); border: 1px solid #B4C2B5; border-radius: 8px; padding: 6px 8px; text-align: center; }
+  .qty-input { width: 84px; font: inherit; color: var(--ink); background: var(--card); border: 1px solid #D5E0D9; border-radius: 8px; padding: 6px 8px; text-align: center; }
   .qty-input:disabled { background: transparent; border-color: transparent; color: var(--ink); opacity: 1; }
   .cv { display: block; }
   .empty { text-align: center; color: var(--muted); padding: 28px 14px; }
@@ -118,7 +118,7 @@
   .tag.expired { background: #fbeae8; }
   .tag.soon { background: #fbf0d9; }
   .actions { display: flex; gap: 6px; flex-wrap: wrap; }
-  .btn-small { background: var(--card); color: var(--ink); border: 1px solid #B4C2B5; border-radius: 9px; padding: 6px 12px; font-size: 0.9rem; white-space: nowrap; }
+  .btn-small { background: var(--card); color: var(--ink); border: 1px solid #D5E0D9; border-radius: 9px; padding: 6px 12px; font-size: 0.9rem; white-space: nowrap; }
   .btn-small:hover { background: var(--head); }
   .btn-small.danger { color: var(--warn); }
 
@@ -135,10 +135,10 @@
   .month-note { margin: -4px 0 12px; text-align: center; color: var(--muted); font-size: 0.9rem; }
   .credit { margin: 8px 0 0; text-align: center; font-size: 0.85rem; color: var(--muted); }
 
-  dialog { width: min(440px, calc(100vw - 32px)); border: 0; border-radius: 16px; padding: 28px; color: var(--ink); background: var(--card); box-shadow: 0 12px 40px rgba(20, 40, 30, 0.25); }
+  dialog { width: min(440px, calc(100vw - 32px)); border: 0; border-radius: 16px; padding: 28px; color: var(--ink); background: var(--card); box-shadow: 0 12px 40px rgba(91, 75, 68, 0.2); }
   dialog[open] { position: fixed; top: 0; right: 0; bottom: 0; left: 0; margin: auto; height: fit-content; max-height: calc(100vh - 24px); overflow-y: auto; z-index: 1000; }
-  dialog.dlg-fallback { box-shadow: 0 0 0 100vmax rgba(20, 40, 30, 0.45); }
-  dialog::backdrop { background: rgba(20, 40, 30, 0.45); }
+  dialog.dlg-fallback { box-shadow: 0 0 0 100vmax rgba(91, 75, 68, 0.4); }
+  dialog::backdrop { background: rgba(91, 75, 68, 0.4); }
   dialog h3 { margin: 0 0 18px; font-size: 1.4rem; font-weight: 500; }
   .field { display: block; margin-bottom: 14px; }
   .field span { display: block; margin-bottom: 4px; font-size: 0.95rem; }
@@ -155,7 +155,7 @@
   .bk-desc { margin: 8px 0 0; }
   .bk-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
   .bk-hint { margin: 0 0 12px; color: var(--muted); }
-  .bk-text { display: block; width: 100%; font: 0.8rem/1.5 ui-monospace, Menlo, Consolas, monospace; color: var(--ink); background: var(--card); border: 1px solid #B4C2B5; border-radius: 10px; padding: 10px 12px; resize: vertical; }
+  .bk-text { display: block; width: 100%; font: 0.8rem/1.5 ui-monospace, Menlo, Consolas, monospace; color: var(--ink); background: var(--card); border: 1px solid #D5E0D9; border-radius: 10px; padding: 10px 12px; resize: vertical; }
     #expDownload[hidden] { display: none; }
   .bk-msg { min-height: 1.4em; margin: 8px 0 0; font-size: 0.95rem; color: var(--muted); }
   #impDialog .field { margin-bottom: 10px; }
@@ -176,7 +176,7 @@
   .bud-val span { flex: none; }
   .bud-box input { width: 1ch; min-width: 1ch; height: 1.5em; margin: 0; padding: 0; border: 0; background: transparent; text-align: left; font: inherit; line-height: inherit; color: var(--ink); outline: none; }
   .bud-tip { font-weight: 400; font-size: 0.8rem; color: var(--muted); }
-  .bud-box input::placeholder { font-size: 0.95rem; font-weight: 400; color: #8a978d; }
+  .bud-box input::placeholder { font-size: 0.95rem; font-weight: 400; color: #B8A79C; }
   .bud-box:focus-within { border-color: var(--green); }
   .plan-bar { height: 10px; border-radius: 999px; background: var(--tint); margin-top: 12px; overflow: hidden; }
   .plan-bar i { display: block; height: 100%; width: 0; background: var(--green); border-radius: 999px; transition: width 0.4s ease; }
@@ -237,19 +237,19 @@
     .panel-head h2 { white-space: nowrap; }
   }
   /* 網頁選單 */
-  .sitenav { background:#F7F5EF; border-bottom:1px solid #D3DDD3; }
+  .sitenav { background:#FFF9F2; border-bottom:1px solid #EADFD2; }
   .sitenav-in { max-width:520px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding-block:10px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); }
-  .sitenav a { flex:0 0 calc((100% - 24px) / 4); min-width:0; box-sizing:border-box; padding:6px 0; border-radius:999px; border:1px solid #D3DDD3; background:#FFFEFA; color:#385749; font-size:.8rem; font-weight:600; text-decoration:none; white-space:nowrap; line-height:1.5; text-align:center; }
+  .sitenav a { flex:0 0 calc((100% - 24px) / 4); min-width:0; box-sizing:border-box; padding:6px 0; border-radius:999px; border:1px solid #EADFD2; background:#FFFDF8; color:#566F62; font-size:.8rem; font-weight:600; text-decoration:none; white-space:nowrap; line-height:1.5; text-align:center; }
   @media (max-width:360px) { .sitenav-in { gap:6px; } .sitenav a { flex-basis:calc((100% - 18px) / 4); font-size:.72rem; } }
-  .sitenav a:hover { background:#E8EEE5; }
-  .sitenav a:focus-visible { outline:2px solid #385749; outline-offset:2px; }
-  .sitenav a[aria-current="page"] { background:#385749; border-color:#385749; color:#fff; }
+  .sitenav a:hover { background:#F3ECE0; }
+  .sitenav a:focus-visible { outline:2px solid #566F62; outline-offset:2px; }
+  .sitenav a[aria-current="page"] { background:#566F62; border-color:#566F62; color:#fff; }
   /* 版面對齊「生活預算」 */
   .hero { padding-block: 30px 26px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); margin-bottom: 0; }
   .hero .wrap { padding: 0; }
   .hero h1 { margin: 0 0 6px; font-size: 1.6rem; line-height: 1.6; letter-spacing: 0; text-wrap: balance; }
   .hero p { line-height: 1.6; }
-  .hero p { font-size: 1rem; opacity: 1; color: #dbe7de; }
+  .hero p { font-size: 1rem; opacity: 1; color: #F3ECE0; }
   main.wrap { padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
   .panel, .panel.plan-panel { padding: 0; overflow: hidden; border-radius: 14px; margin-bottom: 14px; }
   .panel .panel-head { margin: 0; padding: 12px 16px; background: var(--tint); flex-wrap: wrap; gap: 10px; }
@@ -275,6 +275,24 @@
   .copy-row { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: -4px 0 14px; }
   .copy-msg { font-size: .9rem; color: var(--muted); text-align: center; min-height: 1.4em; }
   @media (max-width: 640px) { .hero { padding-block: 30px 26px; margin-bottom: 0; } .hero h1 { font-size: 1.4rem; } }
+
+  .last-bk { margin: 10px 0 0; color: #8A766C; font-size: .85rem; }
+  /* ===== 新配色（灰綠＋奶油白＋暖咖啡＋奶茶點綴）===== */
+  .btn, .btn-primary { color: #FFF9F2; }
+  .btn.ghost, .btn-secondary, .btn-small { background: #FFFDF8; border-color: #D5E0D9; color: #566F62; }
+  .btn.danger { background: #FFFDF8; }
+  .value, .bk-val, .plan-box strong, .alloc-item .v, .rows-total strong, .xsum, .ent .am, .cat-row b, .box strong, .loan-sum strong, #selSum { color: #566F62; }
+  .total-card .value, .total-card .label { color: #FFF9F2; }
+  .value.neg, .plan-box.over strong, .plan-box.over .label { color: var(--warn); }
+  .panel-head h2, .src-head .label { display: inline-flex; align-items: center; gap: 8px; }
+  .panel-head h2::before { content: ""; width: 4px; height: 1.05em; border-radius: 2px; background: #CDA477; flex: none; }
+  .guide-box { border-left-color: #CDA477 !important; }
+  #guideOk { background: #F5EBDD; border-color: #F5EBDD; color: #5B4B44; }
+  .alloc-bar i:nth-child(3) { box-shadow: inset 0 0 0 1px #9FB4A8; }
+  .alloc-item:nth-child(3) .n::before, #bk2 .bk-name::before { box-shadow: inset 0 0 0 1px #9FB4A8; }
+  .sitenav a { border-color: #D5E0D9; }
+  .sitenav a[aria-current="page"] { color: #FFF9F2; }
+  input, select, textarea { background: #FFFDF8; }
 </style>
 </head>
 <body>
@@ -384,8 +402,11 @@
   <section class="panel backup" id="backupBox" aria-labelledby="bkTitle">
     <div class="panel-head"><h2 id="bkTitle">備份與還原</h2></div>
     <div class="panel-body">
-    <p style="margin:0 0 12px;color:#5f6f66;font-size:.92rem;line-height:1.6;text-align:left">這一頁的記錄只存在目前使用的瀏覽器，換手機、換電腦、換瀏覽器或清除瀏覽器資料後就看不到了。8 頁的資料要一起到「預算規劃」頁備份，一個檔案就能全部帶走。</p>
-      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#385749;color:#fff;font-weight:600;text-decoration:none">前往預算規劃備份全部資料 ›</a>
+    <p style="margin:0 0 12px;color:#8A766C;font-size:.92rem;line-height:1.6;text-align:left">資料只存在這支手機的這個瀏覽器，換手機或換瀏覽器前，記得到「預算規劃」備份全部資料。</p>
+      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#566F62;color:#fff;font-weight:600;text-decoration:none">前往預算規劃備份全部資料 ›</a>
+      <p class="last-bk" id="lastBk"></p>
+      <script>(function () { var t = null; try { t = localStorage.getItem('last-backup-v1'); } catch (e) {} var p = document.getElementById('lastBk'); if (!p) return;
+    if (t && /^\d{4}-\d{2}-\d{2}$/.test(t)) { var a = t.split('-'), y = new Date().getFullYear(); p.textContent = '上次備份：' + (Number(a[0]) !== y ? a[0] + '/' : '') + Number(a[1]) + '/' + Number(a[2]); } else p.textContent = '還沒備份過'; })();</script>
       <div hidden style="display:none"><button type="button" class="btn-secondary" id="expBtn">匯出備份</button><button type="button" class="btn-secondary" id="impBtn">匯入備份</button></div>
     </div>
   </section>

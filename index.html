@@ -11,20 +11,21 @@
   if (ok) location.replace('預算規劃.html'); })();
 </script>
 <style>
-  body{margin:0;background:#F7F5EF;color:#293831;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-size:16px;line-height:1.6}
-  .hero{background:#234838;color:#fff;text-align:center;padding:30px max(16px,env(safe-area-inset-left,0px)) 26px}
+  body{margin:0;background:#FFF9F2;color:#5B4B44;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-size:16px;line-height:1.6}
+  .hero{background:#566F62;color:#fff;text-align:center;padding:30px max(16px,env(safe-area-inset-left,0px)) 26px}
   .hero h1{margin:0 0 6px;font-size:1.5rem}
-  .hero p{margin:0;color:#dbe7de}
+  .hero p{margin:0;color:#F3ECE0}
   main{display:flex;justify-content:center;padding:28px max(16px,env(safe-area-inset-left,0px)) 40px}
-  .gbox{width:100%;max-width:380px;background:#FFFEFA;border:1px solid #D3DDD3;border-radius:16px;padding:24px 20px;text-align:center;box-sizing:border-box}
+  .gbox{width:100%;max-width:380px;background:#FFFDF8;border:1px solid #EADFD2;border-radius:16px;padding:24px 20px;text-align:center;box-sizing:border-box}
   .gbox h2{margin:0 0 6px;font-size:1.2rem}
-  .gbox p{margin:0 0 16px;color:#5f6f66;font-size:.95rem}
-  .warn{margin:0 0 16px;padding:10px 12px;border-radius:10px;background:#E8EEE5;color:#293831;font-size:.92rem;text-align:left}
-  input{width:100%;box-sizing:border-box;min-height:48px;padding:10px 12px;border:1px solid #D3DDD3;border-radius:10px;background:#fff;color:#293831;font:inherit;font-size:1.3rem;letter-spacing:.3em;text-align:center}
-  button{width:100%;margin-top:12px;min-height:48px;border:0;border-radius:10px;background:#385749;color:#fff;font:inherit;font-weight:700;cursor:pointer}
-  input:focus-visible,button:focus-visible{outline:2px solid #385749;outline-offset:2px}
+  .gbox p{margin:0 0 16px;color:#8A766C;font-size:.95rem}
+  .warn{margin:0 0 16px;padding:10px 12px;border-radius:10px;background:#F3ECE0;color:#5B4B44;font-size:.92rem;text-align:left}
+  input{width:100%;box-sizing:border-box;min-height:48px;padding:10px 12px;border:1px solid #EADFD2;border-radius:10px;background:#FFFDF8;color:#5B4B44;font:inherit;font-size:1.3rem;letter-spacing:.3em;text-align:center}
+  button{width:100%;margin-top:12px;min-height:48px;border:0;border-radius:10px;background:#566F62;color:#FFF9F2;font:inherit;font-weight:700;cursor:pointer}
+  input:focus-visible,button:focus-visible{outline:2px solid #566F62;outline-offset:2px}
   .gerr{min-height:1.4em;margin:10px 0 0 !important;color:#b3261e !important;font-size:.92rem !important}
-  .credit{text-align:center;color:#5f6f66;font-size:.85rem;margin:0 0 24px}
+  .forgot{margin:4px 0 0 !important;font-size:.88rem !important;color:#8A766C !important}
+  .credit{text-align:center;color:#8A766C;font-size:.85rem;margin:0 0 24px}
 </style>
 </head>
 <body>
@@ -38,6 +39,7 @@
     <input id="gateIn" type="password" inputmode="numeric" autocomplete="off" maxlength="6" aria-label="6 位數密碼" placeholder="••••••">
     <button type="submit">進入</button>
     <p class="gerr" id="gateErr" role="alert"></p>
+    <p class="forgot">忘記密碼？私訊 IG 鯊鯊說心事</p>
   </form>
 </main>
 <p class="credit">© 2026 鯊鯊說心事｜IG：鯊鯊說心事</p>

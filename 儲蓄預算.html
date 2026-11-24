@@ -16,18 +16,18 @@
 <style>
   /* 版面：同「預算規劃」 */
   :root {
-    --green: #385749; --ink: #293831; --bg: #F7F5EF; --card: #FFFEFA; --line: #D3DDD3;
-    --tint: #E8EEE5; --muted: #5f6f66; --warn: #b3261e; --amber: #8a5a00;
+    --green: #566F62; --ink: #5B4B44; --bg: #FFF9F2; --card: #FFFDF8; --line: #EADFD2;
+    --tint: #F3ECE0; --muted: #8A766C; --warn: #b3261e; --amber: #8a5a00;
     color-scheme: light;
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body { margin: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; font-size: 16px; line-height: 1.6; }
-  .hero { background: #234838; color: #fff; padding-block: 30px 26px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .hero { background: #566F62; color: #fff; padding-block: 30px 26px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
   .hero-in { max-width: 960px; margin: 0 auto; }
   .hero-in { text-align: center; }
   .hero h1 { margin: 0 0 6px; font-size: 1.6rem; text-wrap: balance; }
-  .hero p { margin: 0; color: #dbe7de; text-wrap: balance; }
+  .hero p { margin: 0; color: #F3ECE0; text-wrap: balance; }
   .wrap { max-width: 960px; margin: 0 auto; padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0; }
@@ -130,9 +130,9 @@
   .alloc-title { font-weight: 700; margin-bottom: 8px; }
   .alloc-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--tint); gap: 2px; }
   .alloc-bar i { display: block; height: 100%; min-width: 0; }
-  .alloc-bar i:nth-child(1) { background: #234838; }
-  .alloc-bar i:nth-child(2) { background: #6f8f7c; }
-  .alloc-bar i:nth-child(3) { background: #b9cdbd; }
+  .alloc-bar i:nth-child(1) { background: #566F62; }
+  .alloc-bar i:nth-child(2) { background: #CDA477; }
+  .alloc-bar i:nth-child(3) { background: #D5E0D9; }
   .alloc-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
   .alloc-item .n { font-size: .9rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
   .alloc-item .n::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
@@ -143,8 +143,8 @@
   .stat { padding: 12px 14px; }
   .stat .value { font-size: 1.3rem; }
   .grid2.one { grid-template-columns: minmax(0, 1fr); }
-  .total-card { background: #234838; border-color: #234838; color: #fff; display: flex; flex-direction: column; justify-content: center; }
-  .total-card .label { color: #dbe7de; }
+  .total-card { background: #566F62; border-color: #566F62; color: #fff; display: flex; flex-direction: column; justify-content: center; }
+  .total-card .label { color: #F3ECE0; }
   .big-total { margin-top: 10px; text-align: center; align-items: center; padding: 8px 14px; }
   .big-total .label { font-size: .8rem; }
   .big-total .value { font-size: 1.3rem; }
@@ -187,8 +187,8 @@
   .note-s { margin: 0 0 12px; color: var(--muted); font-size: .92rem; }
 
   dialog { border: 0; border-radius: 16px; padding: 0; width: min(440px, calc(100vw - 32px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; color: var(--ink); background: var(--card); position: fixed; inset: 0; margin: auto; z-index: 1000; }
-  dialog::backdrop { background: rgba(35, 56, 46, .45); }
-  dialog.dlg-fallback { box-shadow: 0 0 0 100vmax rgba(35, 56, 46, .45); }
+  dialog::backdrop { background: rgba(91, 75, 68, .4); }
+  dialog.dlg-fallback { box-shadow: 0 0 0 100vmax rgba(91, 75, 68, .4); }
   dialog:not([open]) { display: none; }
   .dlg-body { padding: 18px 18px 6px; }
   .dlg-body h3 { margin: 0 0 8px; font-size: 1.15rem; }
@@ -275,7 +275,7 @@
   .plan-bar { height: 10px; border-radius: 999px; background: var(--tint); margin-top: 12px; overflow: hidden; }
   .plan-bar i { display: block; height: 100%; width: 0; background: var(--green); border-radius: 999px; transition: width .4s ease; }
   #planNote { margin: 12px 0 0; }
-  .plan-box strong.unset { font-size: 15px; color: var(--muted, #8a8a80); font-weight: 600; }
+  .plan-box strong.unset { font-size: 15px; color: var(--muted, #8A766C); font-weight: 600; }
   .plan-bar.over i { background: var(--warn); }
   @media (max-width: 640px) { .plan-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .plan-grid .bud-box { grid-column: 1 / -1; } }
   .head-link { margin-left: auto; font-size: .9rem; font-weight: 600; color: var(--green); text-decoration: none; padding: 6px 4px; white-space: nowrap; }
@@ -285,13 +285,31 @@
   .grand { margin-bottom: 14px; }
   @media (max-width: 899px) { .gp .panel-body { padding: 8px; } }
   /* 網頁選單 */
-  .sitenav { background:#F7F5EF; border-bottom:1px solid #D3DDD3; }
+  .sitenav { background:#FFF9F2; border-bottom:1px solid #EADFD2; }
   .sitenav-in { max-width:520px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding-block:10px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); }
-  .sitenav a { flex:0 0 calc((100% - 24px) / 4); min-width:0; box-sizing:border-box; padding:6px 0; border-radius:999px; border:1px solid #D3DDD3; background:#FFFEFA; color:#385749; font-size:.8rem; font-weight:600; text-decoration:none; white-space:nowrap; line-height:1.5; text-align:center; }
+  .sitenav a { flex:0 0 calc((100% - 24px) / 4); min-width:0; box-sizing:border-box; padding:6px 0; border-radius:999px; border:1px solid #EADFD2; background:#FFFDF8; color:#566F62; font-size:.8rem; font-weight:600; text-decoration:none; white-space:nowrap; line-height:1.5; text-align:center; }
   @media (max-width:360px) { .sitenav-in { gap:6px; } .sitenav a { flex-basis:calc((100% - 18px) / 4); font-size:.72rem; } }
-  .sitenav a:hover { background:#E8EEE5; }
-  .sitenav a:focus-visible { outline:2px solid #385749; outline-offset:2px; }
-  .sitenav a[aria-current="page"] { background:#385749; border-color:#385749; color:#fff; }
+  .sitenav a:hover { background:#F3ECE0; }
+  .sitenav a:focus-visible { outline:2px solid #566F62; outline-offset:2px; }
+  .sitenav a[aria-current="page"] { background:#566F62; border-color:#566F62; color:#fff; }
+
+  .last-bk { margin: 10px 0 0; color: #8A766C; font-size: .85rem; }
+  /* ===== 新配色（灰綠＋奶油白＋暖咖啡＋奶茶點綴）===== */
+  .btn, .btn-primary { color: #FFF9F2; }
+  .btn.ghost, .btn-secondary, .btn-small { background: #FFFDF8; border-color: #D5E0D9; color: #566F62; }
+  .btn.danger { background: #FFFDF8; }
+  .value, .bk-val, .plan-box strong, .alloc-item .v, .rows-total strong, .xsum, .ent .am, .cat-row b, .box strong, .loan-sum strong, #selSum { color: #566F62; }
+  .total-card .value, .total-card .label { color: #FFF9F2; }
+  .value.neg, .plan-box.over strong, .plan-box.over .label { color: var(--warn); }
+  .panel-head h2, .src-head .label { display: inline-flex; align-items: center; gap: 8px; }
+  .panel-head h2::before { content: ""; width: 4px; height: 1.05em; border-radius: 2px; background: #CDA477; flex: none; }
+  .guide-box { border-left-color: #CDA477 !important; }
+  #guideOk { background: #F5EBDD; border-color: #F5EBDD; color: #5B4B44; }
+  .alloc-bar i:nth-child(3) { box-shadow: inset 0 0 0 1px #9FB4A8; }
+  .alloc-item:nth-child(3) .n::before, #bk2 .bk-name::before { box-shadow: inset 0 0 0 1px #9FB4A8; }
+  .sitenav a { border-color: #D5E0D9; }
+  .sitenav a[aria-current="page"] { color: #FFF9F2; }
+  input, select, textarea { background: #FFFDF8; }
 </style>
 </head>
 <body>
@@ -360,8 +378,11 @@
   <section class="panel" id="bkPanel">
     <div class="panel-head"><h2>備份與還原</h2></div>
     <div class="panel-body">
-      <p style="margin:0 0 12px;color:#5f6f66;font-size:.92rem;line-height:1.6;text-align:left">這一頁的記錄只存在目前使用的瀏覽器，換手機、換電腦、換瀏覽器或清除瀏覽器資料後就看不到了。8 頁的資料要一起到「預算規劃」頁備份，一個檔案就能全部帶走。</p>
-      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#385749;color:#fff;font-weight:600;text-decoration:none">前往預算規劃備份全部資料 ›</a>
+      <p style="margin:0 0 12px;color:#8A766C;font-size:.92rem;line-height:1.6;text-align:left">資料只存在這支手機的這個瀏覽器，換手機或換瀏覽器前，記得到「預算規劃」備份全部資料。</p>
+      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#566F62;color:#fff;font-weight:600;text-decoration:none">前往預算規劃備份全部資料 ›</a>
+      <p class="last-bk" id="lastBk"></p>
+      <script>(function () { var t = null; try { t = localStorage.getItem('last-backup-v1'); } catch (e) {} var p = document.getElementById('lastBk'); if (!p) return;
+    if (t && /^\d{4}-\d{2}-\d{2}$/.test(t)) { var a = t.split('-'), y = new Date().getFullYear(); p.textContent = '上次備份：' + (Number(a[0]) !== y ? a[0] + '/' : '') + Number(a[1]) + '/' + Number(a[2]); } else p.textContent = '還沒備份過'; })();</script>
       <div hidden style="display:none"><button type="button" class="btn ghost" id="expBtn">匯出備份</button><button type="button" class="btn ghost" id="impBtn">匯入備份</button></div>
     </div>
   </section>

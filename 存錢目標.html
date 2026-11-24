@@ -14,13 +14,13 @@
 </script>
 
 <style>
-  :root { --green:#385749; --ink:#293831; --bg:#F7F5EF; --card:#FFFEFA; --line:#D3DDD3; --tint:#E8EEE5; --muted:#5f6f66; --warn:#b3261e; color-scheme: light; }
+  :root { --green:#566F62; --ink:#5B4B44; --bg:#FFF9F2; --card:#FFFDF8; --line:#EADFD2; --tint:#F3ECE0; --muted:#8A766C; --warn:#b3261e; color-scheme: light; }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body { margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; font-size:16px; line-height:1.6; }
-  .hero { background:#234838; color:#fff; text-align:center; padding-block:30px 26px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); }
+  .hero { background:#566F62; color:#fff; text-align:center; padding-block:30px 26px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); }
   .hero h1 { margin:0 0 6px; font-size:1.6rem; text-wrap:balance; }
-  .hero p { margin:0; color:#dbe7de; text-wrap:balance; }
+  .hero p { margin:0; color:#F3ECE0; text-wrap:balance; }
   .wrap { max-width:960px; margin:0 auto; padding-block:18px 40px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); }
   button,input,select,textarea { font:inherit; }
   input,select,textarea { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); min-height:44px; }
@@ -66,17 +66,17 @@
   .box .label { font-size:.75rem; color:var(--muted); line-height:1.3; }
   .box strong { display:block; font-size:clamp(.78rem,3.6vw,1rem); line-height:1.5; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .bar { height:10px; border-radius:999px; background:var(--tint); overflow:hidden; margin:12px 0 0; }
-  .bar i { display:block; height:100%; width:0; background:#234838; border-radius:999px; transition:width .3s; }
+  .bar i { display:block; height:100%; width:0; background:#566F62; border-radius:999px; transition:width .3s; }
   .sub-line { margin:6px 0 0; font-size:.85rem; color:var(--muted); }
   .stamps { display:grid; grid-template-columns:repeat(auto-fill,minmax(58px,1fr)); gap:12px 8px; margin-top:14px; }
   .st { display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; }
   .st .mo { font-size:.75rem; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap; }
   .st .mo.yr { color:var(--ink); font-weight:700; }
   .stamp { width:46px; height:46px; border-radius:50%; border:2px dashed var(--line); background:var(--card); color:var(--ink); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; font-weight:700; font-variant-numeric:tabular-nums; }
-  .stamp[aria-pressed="true"] { background:#234838; border:2px solid #234838; color:#fff; }
+  .stamp[aria-pressed="true"] { background:#566F62; border:2px solid #566F62; color:#fff; }
   .stamp.next { border:2px solid var(--green); }
   .st .am { font-size:.72rem; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap; }
-  .fin { margin:10px 0 0; text-align:center; color:#234838; font-weight:700; }
+  .fin { margin:10px 0 0; text-align:center; color:#566F62; font-weight:700; }
   .edit-box { border:1px dashed var(--line); border-radius:12px; padding:12px; margin-top:12px; background:#fff; }
   .add-dep { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; align-items:end; margin-top:14px; }
   .add-dep label { font-size:.85rem; color:var(--muted); display:block; margin-bottom:4px; }
@@ -90,8 +90,8 @@
   #list > .undo-bar { margin:0 0 14px; }
   .undo-bar span { min-width:0; overflow-wrap:anywhere; }
   dialog { border:0; border-radius:16px; padding:0; width:min(440px, calc(100vw - 32px)); max-height:calc(100dvh - 32px); overflow:auto; color:var(--ink); background:var(--card); position:fixed; inset:0; margin:auto; z-index:1000; }
-  dialog::backdrop { background:rgba(35,56,46,.45); }
-  dialog.dlg-fallback { box-shadow:0 0 0 100vmax rgba(35,56,46,.45); }
+  dialog::backdrop { background:rgba(91,75,68,.4); }
+  dialog.dlg-fallback { box-shadow:0 0 0 100vmax rgba(91,75,68,.4); }
   dialog:not([open]) { display:none; }
   .dlg-body { padding:18px 18px 6px; }
   .dlg-body h3 { margin:0 0 8px; font-size:1.15rem; }
@@ -108,13 +108,31 @@
     .dlg-act .btn { flex:1 1 auto; }
   }
   /* 網頁選單 */
-  .sitenav { background:#F7F5EF; border-bottom:1px solid #D3DDD3; }
+  .sitenav { background:#FFF9F2; border-bottom:1px solid #EADFD2; }
   .sitenav-in { max-width:520px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding-block:10px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); }
-  .sitenav a { flex:0 0 calc((100% - 24px) / 4); min-width:0; box-sizing:border-box; padding:6px 0; border-radius:999px; border:1px solid #D3DDD3; background:#FFFEFA; color:#385749; font-size:.8rem; font-weight:600; text-decoration:none; white-space:nowrap; line-height:1.5; text-align:center; }
+  .sitenav a { flex:0 0 calc((100% - 24px) / 4); min-width:0; box-sizing:border-box; padding:6px 0; border-radius:999px; border:1px solid #EADFD2; background:#FFFDF8; color:#566F62; font-size:.8rem; font-weight:600; text-decoration:none; white-space:nowrap; line-height:1.5; text-align:center; }
   @media (max-width:360px) { .sitenav-in { gap:6px; } .sitenav a { flex-basis:calc((100% - 18px) / 4); font-size:.72rem; } }
-  .sitenav a:hover { background:#E8EEE5; }
-  .sitenav a:focus-visible { outline:2px solid #385749; outline-offset:2px; }
-  .sitenav a[aria-current="page"] { background:#385749; border-color:#385749; color:#fff; }
+  .sitenav a:hover { background:#F3ECE0; }
+  .sitenav a:focus-visible { outline:2px solid #566F62; outline-offset:2px; }
+  .sitenav a[aria-current="page"] { background:#566F62; border-color:#566F62; color:#fff; }
+
+  .last-bk { margin: 10px 0 0; color: #8A766C; font-size: .85rem; }
+  /* ===== 新配色（灰綠＋奶油白＋暖咖啡＋奶茶點綴）===== */
+  .btn, .btn-primary { color: #FFF9F2; }
+  .btn.ghost, .btn-secondary, .btn-small { background: #FFFDF8; border-color: #D5E0D9; color: #566F62; }
+  .btn.danger { background: #FFFDF8; }
+  .value, .bk-val, .plan-box strong, .alloc-item .v, .rows-total strong, .xsum, .ent .am, .cat-row b, .box strong, .loan-sum strong, #selSum { color: #566F62; }
+  .total-card .value, .total-card .label { color: #FFF9F2; }
+  .value.neg, .plan-box.over strong, .plan-box.over .label { color: var(--warn); }
+  .panel-head h2, .src-head .label { display: inline-flex; align-items: center; gap: 8px; }
+  .panel-head h2::before { content: ""; width: 4px; height: 1.05em; border-radius: 2px; background: #CDA477; flex: none; }
+  .guide-box { border-left-color: #CDA477 !important; }
+  #guideOk { background: #F5EBDD; border-color: #F5EBDD; color: #5B4B44; }
+  .alloc-bar i:nth-child(3) { box-shadow: inset 0 0 0 1px #9FB4A8; }
+  .alloc-item:nth-child(3) .n::before, #bk2 .bk-name::before { box-shadow: inset 0 0 0 1px #9FB4A8; }
+  .sitenav a { border-color: #D5E0D9; }
+  .sitenav a[aria-current="page"] { color: #FFF9F2; }
+  input, select, textarea { background: #FFFDF8; }
 </style>
 </head>
 <body>
@@ -162,8 +180,11 @@
   <section class="panel" id="p_bk">
     <div class="panel-head"><h2>備份與還原</h2></div>
     <div class="panel-body">
-      <p style="margin:0 0 12px;color:#5f6f66;font-size:.92rem;line-height:1.6;text-align:left">這一頁的記錄只存在目前使用的瀏覽器，換手機、換電腦、換瀏覽器或清除瀏覽器資料後就看不到了。8 頁的資料要一起到「預算規劃」頁備份，一個檔案就能全部帶走。</p>
-      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#385749;color:#fff;font-weight:600;text-decoration:none">前往預算規劃備份全部資料 ›</a>
+      <p style="margin:0 0 12px;color:#8A766C;font-size:.92rem;line-height:1.6;text-align:left">資料只存在這支手機的這個瀏覽器，換手機或換瀏覽器前，記得到「預算規劃」備份全部資料。</p>
+      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#566F62;color:#fff;font-weight:600;text-decoration:none">前往預算規劃備份全部資料 ›</a>
+      <p class="last-bk" id="lastBk"></p>
+      <script>(function () { var t = null; try { t = localStorage.getItem('last-backup-v1'); } catch (e) {} var p = document.getElementById('lastBk'); if (!p) return;
+    if (t && /^\d{4}-\d{2}-\d{2}$/.test(t)) { var a = t.split('-'), y = new Date().getFullYear(); p.textContent = '上次備份：' + (Number(a[0]) !== y ? a[0] + '/' : '') + Number(a[1]) + '/' + Number(a[2]); } else p.textContent = '還沒備份過'; })();</script>
       <div hidden style="display:none"><button type="button" class="btn ghost" id="expBtn">匯出備份</button><button type="button" class="btn ghost" id="impBtn">匯入備份</button></div>
     </div>
   </section>
