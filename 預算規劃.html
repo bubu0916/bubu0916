@@ -315,6 +315,13 @@
     .income-row .total-card { flex-direction: row; justify-content: space-between; align-items: baseline; padding: 8px 16px; min-height: 0; }
     .income-row .total-card .value { font-size: 1.3rem; }
   }
+  @media (max-width: 640px) {
+    #planPanel .plans { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 6px !important; }
+    #planPanel .plan { padding: 8px 2px; border-radius: 10px; gap: 2px; justify-content: center; }
+    #planPanel .plan .ratio { font-size: .95rem; white-space: nowrap; }
+    #planPanel .plan .pct { display: none; }
+    #planPanel .plan { min-height: 44px; }
+  }
 </style>
 </head>
 <body>
@@ -365,7 +372,7 @@
 
   <section class="panel" id="planPanel">
     <div class="panel-head">
-      <button type="button" class="collapse-btn" data-target="planPanel" aria-expanded="true"><h2>預算分配</h2><span class="tog">收起</span></button>
+      <button type="button" class="collapse-btn" data-target="planPanel" aria-expanded="true"><h2>預算分配比例</h2><span class="tog">收起</span></button>
     </div>
     <div class="panel-body">
       <p class="note-s">花費 · 投資 · 儲蓄，點一格套用到總收入。</p>
