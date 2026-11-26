@@ -307,6 +307,14 @@
   .sitenav a { border-color: #D5E0D9; }
   .sitenav a[aria-current="page"] { color: #FFF9F2; }
   input, select, textarea { background: #FFFDF8; }
+  @media (max-width: 640px) {
+    #slots { gap: 8px; padding: 10px 12px 12px; }
+    #slots .slot { padding: 6px 8px; gap: 2px; border-radius: 10px; }
+    #slots .slot select { min-height: 30px; padding: 2px 6px; font-size: .85rem; }
+    #slots .slot .amt input { min-height: 30px; padding: 2px 0; font-size: 1.05rem; }
+    .income-row .total-card { flex-direction: row; justify-content: space-between; align-items: baseline; padding: 8px 16px; min-height: 0; }
+    .income-row .total-card .value { font-size: 1.3rem; }
+  }
 </style>
 </head>
 <body>
