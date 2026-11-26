@@ -14,7 +14,7 @@
 </script>
 
 <style>
-  /* 版面：同「預算規劃」 */
+  /* 版面：同「收入分配」 */
   :root {
     --green: #566F62; --ink: #5B4B44; --bg: #FFF9F2; --card: #FFFDF8; --line: #EADFD2;
     --tint: #F3ECE0; --muted: #8A766C; --warn: #b3261e; --amber: #8a5a00;
@@ -376,7 +376,7 @@
   <p>一點一滴，存出安心的未來🌿</p>
 </div></header>
 <noscript><p style="margin:0;padding:12px 16px;background:#FFF4E5;color:#8a5a00;text-align:center;font-size:.95rem;line-height:1.6">這個預覽沒有執行網頁程式，所以日期、按鈕和資料都無法使用。請改用 Safari 或 Chrome 開啟檔案，或使用網路預覽連結。</p></noscript>
-<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">預算規劃</a><a href="生活預算.html">本月預算</a><a href="日常花費.html">每日記帳</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html" aria-current="page">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
+<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">收入分配</a><a href="生活預算.html">支出預算</a><a href="日常花費.html">每日記帳</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html" aria-current="page">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
 
 <main class="wrap">
   <div class="monthbar">
@@ -386,7 +386,7 @@
   </div>
   <div class="copy-row"><button type="button" class="btn ghost small" id="copyPrev">沿用上個月</button><span class="copy-msg" id="copyMsg" role="status" aria-live="polite"></span></div>
 
-  <p class="err" id="saveNote" role="alert" hidden>這次未能自動儲存，請到「預算規劃」頁按「備份全部資料」留存。</p>
+  <p class="err" id="saveNote" role="alert" hidden>這次未能自動儲存，請到「收入分配」頁按「備份全部資料」留存。</p>
 
   <section class="panel" id="p_plan">
     <div class="panel-head">
@@ -439,8 +439,8 @@
   <section class="panel" id="bkPanel">
     <div class="panel-head"><h2>備份與還原</h2></div>
     <div class="panel-body">
-      <p style="margin:0 0 12px;color:#8A766C;font-size:.92rem;line-height:1.6;text-align:left">資料只存在這支手機的這個瀏覽器，換手機或換瀏覽器前，記得到「預算規劃」備份全部資料。</p>
-      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#566F62;color:#fff;font-weight:600;text-decoration:none">前往預算規劃備份全部資料 ›</a>
+      <p style="margin:0 0 12px;color:#8A766C;font-size:.92rem;line-height:1.6;text-align:left">資料只存在這支手機的這個瀏覽器，換手機或換瀏覽器前，記得到「收入分配」備份全部資料。</p>
+      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#566F62;color:#fff;font-weight:600;text-decoration:none">前往收入分配備份全部資料 ›</a>
       <p class="last-bk" id="lastBk"></p>
       <script>(function () { var t = null; try { t = localStorage.getItem('last-backup-v1'); } catch (e) {} var p = document.getElementById('lastBk'); if (!p) return;
     if (t && /^\d{4}-\d{2}-\d{2}$/.test(t)) { var a = t.split('-'), y = new Date().getFullYear(); p.textContent = '上次備份：' + (Number(a[0]) !== y ? a[0] + '/' : '') + Number(a[1]) + '/' + Number(a[2]); } else p.textContent = '還沒備份過'; })();</script>
@@ -448,7 +448,7 @@
     </div>
   </section>
 
-  <p class="credit">© 2026 鯊鯊說心事｜IG：鯊鯊說心事</p>
+  <p class="credit">© 2026 鯊鯊說心事｜<a class="ig-link" href="https://www.instagram.com/bu.bu_0916/" target="_blank" rel="noopener" style="color:#566F62;font-weight:700;text-decoration:underline;text-underline-offset:3px">IG：鯊鯊說心事</a></p>
 </main>
 
 <dialog id="expDlg" aria-labelledby="expTitle">
@@ -537,7 +537,7 @@
   }
   function ownExtras(g) { var ex = data.extras[g] || (data.extras[g] = {}); if (!ex[month]) ex[month] = JSON.parse(JSON.stringify(extrasOf(g, month))); return ex[month]; }
   var PLAN_KEY = 'household-expense-v1';
-  function readPlan(m) {                              // 預算規劃（同一個瀏覽器）的收入與「儲蓄」目標；讀不到回傳 null
+  function readPlan(m) {                              // 收入分配（同一個瀏覽器）的收入與「儲蓄」目標；讀不到回傳 null
     try {
       var raw = localStorage.getItem(PLAN_KEY); if (!raw) return { income: 0, v: null };
       var d = JSON.parse(raw), sl = (d && d.slots) || {}, b = 0, best = null;
@@ -549,7 +549,7 @@
       return { income: b, v: v > 0 ? Math.round(v) : null, mode: pl.mode };
     } catch (e) { return { income: 0, v: null }; }
   }
-  function writePlan(v, income) {                     // 這裡改的花費預算，同步成預算規劃的「儲蓄」目標（自訂）
+  function writePlan(v, income) {                     // 這裡改的花費預算，同步成收入分配的「儲蓄」目標（自訂）
     try {
       var raw = localStorage.getItem(PLAN_KEY), d = raw ? JSON.parse(raw) : null;
       if (!d || typeof d !== 'object') d = { version: 2, items: [] };
@@ -568,9 +568,9 @@
     } catch (e) {}
   }
   function budW(v) { var c = (v.match(/,/g) || []).length; return (Math.max(1, v.length - c * 0.5) + 0.5) + 'ch'; }
-  function budgetOf(m) {                              // 預算規劃有收入：沒自己改就用它；沒收入：以預算規劃的儲蓄目標為準
+  function budgetOf(m) {                              // 收入分配有收入：沒自己改就用它；沒收入：以收入分配的儲蓄目標為準
     var bd = data.budget || (data.budget = {});
-    if (m !== todayISO().slice(0, 7)) return bd[m] != null ? bd[m] : 0;   // 預算規劃只對應「這個月」，其他月份各自填
+    if (m !== todayISO().slice(0, 7)) return bd[m] != null ? bd[m] : 0;   // 收入分配只對應「這個月」，其他月份各自填
     var pp = readPlan(m);
     if (pp.income > 0) return pp.v != null ? pp.v : 0;
     if (pp.v != null) return pp.v;
@@ -676,7 +676,7 @@
     $('planBar').style.width = (bud > 0 ? Math.min(100, grand * 100 / bud) : 0) + '%';
     var isCur = month === todayISO().slice(0, 7), pp = isCur ? readPlan(month) : { income: 0, v: null }, usedTxt = bud > 0 ? (left < 0 ? '目前超出 ' + money(-left) + '。' : '已用掉 ' + Math.round(grand * 100 / bud) + '%。') : '';
     $('budIn').readOnly = false; $('budIn').parentNode.classList.remove('locked');
-    $('planNote').textContent = !isCur ? '這個月的預算自己填，每個月各自記錄。' + usedTxt : (pp.income > 0 && pp.v != null) ? '已套用預算規劃的儲蓄 ' + money(pp.v) + '。臨時要改可以直接在這裡改，會同步到預算規劃。' + usedTxt : '預算規劃沒有輸入數字時，這裡可自由更改，會同步至預算規劃。' + usedTxt;
+    $('planNote').textContent = !isCur ? '這個月的預算自己填，每個月各自記錄。' + usedTxt : (pp.income > 0 && pp.v != null) ? '已套用收入分配的儲蓄 ' + money(pp.v) + '。臨時要改可以直接在這裡改，會同步到收入分配。' + usedTxt : '收入分配沒有輸入數字時，這裡可自由更改，會同步至收入分配。' + usedTxt;
   }
   var copyAsk = false;
   function hasData(m) { return GIDS.some(function (p) { return [1, 2, 3].some(function (n) { var x = (data.extras[p + n] || {})[m]; return x && x.length; }); }); }

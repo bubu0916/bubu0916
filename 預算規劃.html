@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="claude:viewport-fit-sides" content="cover">
-<title>預算規劃</title>
+<title>收入分配</title>
 <!-- 密碼（嚇阻用）：還沒在這個瀏覽器輸入過密碼，就帶回首頁的密碼頁 -->
 <style id="gateStyle">html.gate-locked body{visibility:hidden}</style>
 <script>
@@ -334,23 +334,26 @@
     .bucket .bk-edit input { width: 100%; min-width: 0; font-size: .95rem; padding: 4px 6px; text-align: center; }
     .bucket .bk-edit small { flex-basis: 100%; font-size: .68rem; line-height: 1.3; }
   }
+  .next-step { display: flex; justify-content: center; margin: 4px 0 16px; }
+  .next-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; min-height: 44px; padding: 10px 22px; }
+  .guide-link { color: inherit; text-decoration: underline; text-decoration-color: #CDA477; text-underline-offset: 3px; }
 </style>
 </head>
 <body>
 <header class="hero"><div class="hero-in">
-  <h1>💰 預算規劃</h1>
+  <h1>💰 收入分配</h1>
   <p>讓每一筆錢到該到的地方，完成任務🌿</p>
 </div></header>
 <noscript><p style="margin:0;padding:12px 16px;background:#FFF4E5;color:#8a5a00;text-align:center;font-size:.95rem;line-height:1.6">這個預覽沒有執行網頁程式，所以日期、按鈕和資料都無法使用。請改用 Safari 或 Chrome 開啟檔案，或使用網路預覽連結。</p></noscript>
-<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html" aria-current="page">預算規劃</a><a href="生活預算.html">本月預算</a><a href="日常花費.html">每日記帳</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
+<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html" aria-current="page">收入分配</a><a href="生活預算.html">支出預算</a><a href="日常花費.html">每日記帳</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
 
 <main class="wrap">
   <section class="guide-box" id="guideBox" hidden aria-labelledby="guideTitle">
     <h2 id="guideTitle">第一次使用？照這個順序就好</h2>
     <ol>
-      <li>💰 <b>預算規劃</b>：填收入、選分配比例</li>
-      <li>🏠 <b>本月預算</b>：把花費分成四類</li>
-      <li>🧾 <b>每日記帳</b>：每天記一筆，看還剩多少</li>
+      <li>💰 <b>收入分配</b>｜填這個月的收入，選擇花費、投資和儲蓄的比例。</li>
+      <li>🏠 <a href="生活預算.html" class="guide-link"><b>支出預算</b></a>｜規劃貸款、生活、家庭和娛樂要留多少錢。</li>
+      <li>🧾 <a href="日常花費.html" class="guide-link"><b>每日記帳</b></a>｜記下實際花費，看看每天還能花多少。</li>
     </ol>
     <p>想存錢，就到 🏅 <b>存錢目標</b> 選一種存法</p>
     <div class="guide-act"><button type="button" class="btn ghost small" id="guideOk">我知道了</button></div>
@@ -402,6 +405,7 @@
     <div class="card bucket" id="bk1"><div class="bk-name"></div><div class="bk-val"></div></div>
     <div class="card bucket" id="bk2"><div class="bk-name"></div><div class="bk-val"></div></div>
   </div>
+  <div class="next-step"><a class="btn next-btn" href="生活預算.html">下一步：規劃本月支出 ›</a></div>
   <section class="panel" id="bkPanel">
     <div class="panel-head">
       <h2>備份與還原</h2>
@@ -417,7 +421,7 @@
     </div>
   </section>
 
-  <p class="credit">© 2026 鯊鯊說心事｜IG：鯊鯊說心事</p>
+  <p class="credit">© 2026 鯊鯊說心事｜<a class="ig-link" href="https://www.instagram.com/bu.bu_0916/" target="_blank" rel="noopener" style="color:#566F62;font-weight:700;text-decoration:underline;text-underline-offset:3px">IG：鯊鯊說心事</a></p>
 </main>
 
 <dialog id="srcDlg" aria-labelledby="srcTitle">
@@ -453,7 +457,7 @@
 <dialog id="expDlg" aria-labelledby="expTitle">
   <div class="dlg-body">
     <h3 id="expTitle">備份全部資料</h3>
-    <p class="note-s">這份備份包含 8 頁的所有資料。按「下載檔案」存起來，或把下面的文字複製到備忘錄、傳給自己。到新的地方打開「預算規劃」，按「匯入全部資料」即可。</p>
+    <p class="note-s">這份備份包含 8 頁的所有資料。按「下載檔案」存起來，或把下面的文字複製到備忘錄、傳給自己。到新的地方打開「收入分配」，按「匯入全部資料」即可。</p>
     <textarea id="expText" readonly aria-label="備份內容"></textarea>
   </div>
   <div class="dlg-act"><button type="button" class="btn ghost" id="expClose">關閉</button><button type="button" class="btn ghost" id="expDl">下載檔案</button><button type="button" class="btn" id="expCopy">複製</button></div>
@@ -977,7 +981,7 @@
       location.reload();                              // 重新載入，讓這一頁用匯入的資料重新開始
       return;
     }
-    var p = raw ? parseData(raw) : null;               // 舊版只有「預算規劃」一頁的備份，也可以匯入
+    var p = raw ? parseData(raw) : null;               // 舊版只有「收入分配」一頁的備份，也可以匯入
     if (!p) { $('impErr').textContent = '這不是有效的備份內容，請確認有複製完整。'; return; }
     data = p; save(); closeDlg($('impDlg')); buildSlots('income'); render();
   });

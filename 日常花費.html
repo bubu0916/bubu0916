@@ -14,7 +14,7 @@
 </script>
 
 <style>
-  /* 版面：同「預算規劃」 */
+  /* 版面：同「收入分配」 */
   :root {
     --green: #566F62; --ink: #5B4B44; --bg: #FFF9F2; --card: #FFFDF8; --line: #EADFD2;
     --tint: #F3ECE0; --muted: #8A766C; --warn: #b3261e; --amber: #8a5a00;
@@ -399,7 +399,7 @@
   .picks { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 6px !important; }
   .pick { flex-direction: column !important; justify-content: center !important; align-items: center; gap: 4px !important; padding: 8px 2px !important; text-align: center !important; }
   .pick span { align-items: center !important; font-size: .85rem !important; white-space: nowrap; }
-  .picks-note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .picks-note { line-height: 1.5; }
   /* 記帳區：類別・備註・金額一排三格 */
   .add-form { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.1fr) minmax(0, .85fr) !important; gap: 6px !important; }
   .add-form select { font-size: .88rem !important; padding-left: 6px !important; padding-right: 0 !important; }
@@ -422,7 +422,7 @@
   <p>每天記一筆，月底不心慌🌿</p>
 </div></header>
 <noscript><p style="margin:0;padding:12px 16px;background:#FFF4E5;color:#8a5a00;text-align:center;font-size:.95rem;line-height:1.6">這個預覽沒有執行網頁程式，所以日期、按鈕和資料都無法使用。請改用 Safari 或 Chrome 開啟檔案，或使用網路預覽連結。</p></noscript>
-<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">預算規劃</a><a href="生活預算.html">本月預算</a><a href="日常花費.html" aria-current="page">每日記帳</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
+<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">收入分配</a><a href="生活預算.html">支出預算</a><a href="日常花費.html" aria-current="page">每日記帳</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
 
 <main class="wrap">
   <div class="monthbar">
@@ -431,7 +431,7 @@
     <button class="btn ghost" type="button" id="nextM" aria-label="下個月">›</button>
   </div>
 
-  <p class="err" id="saveNote" role="alert" hidden>這次未能自動儲存，請到「預算規劃」頁按「備份全部資料」留存。</p>
+  <p class="err" id="saveNote" role="alert" hidden>這次未能自動儲存，請到「收入分配」頁按「備份全部資料」留存。</p>
 
   <div class="stats">
     <div class="card stat"><div class="label">今日花費</div><div class="value" id="sToday">$0</div></div>
@@ -457,7 +457,7 @@
 
   <section class="panel" id="p_plan">
     <div class="panel-head">
-      <button type="button" class="collapse-btn" data-target="p_plan" aria-expanded="true"><h2>要加入的花費</h2><span class="tog">收起</span></button>
+      <button type="button" class="collapse-btn" data-target="p_plan" aria-expanded="true"><h2>月曆顯示的花費類別</h2><span class="tog">收起</span></button>
     </div>
     <div class="panel-body">
       <div class="plan-grid">
@@ -466,8 +466,8 @@
         <div class="plan-box"><div class="label" id="planLeftLbl">還剩</div><strong id="planLeft">$0</strong></div>
       </div>
       <div class="plan-bar"><i id="planBar"></i></div>
-      <p class="picks-note">勾選的花費，會加入下方月曆。</p>
-      <div class="picks" id="picks" role="group" aria-label="計入項目（本月預算的大標題）"></div>
+      <p class="picks-note">勾選你想在月曆和上方數字裡看到的花費類別。取消勾選後，原本的記帳資料仍會保留。</p>
+      <div class="picks" id="picks" role="group" aria-label="計入項目（支出預算的大標題）"></div>
       <div class="cat-spend" id="catSpend" hidden><div class="cs-title">超出預算</div><div id="catSpendList"></div></div>
       <p class="note-s" id="planNote">填入本月花費預算，就能看到每天還可以花多少。</p>
     </div>
@@ -480,15 +480,15 @@
     <div class="panel-body">
       <div class="cal-head" aria-hidden="true"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
       <div class="cal-grid" id="calGrid"></div>
-      <p class="cal-tip">點一天，上面的記帳區就會換成那一天。日曆只算「要加入的花費」裡勾選的項目。</p>
+      <p class="cal-tip">點一天，上面的記帳區就會換成那一天。月曆只顯示「月曆顯示的花費類別」裡勾選的類別。</p>
     </div>
   </section>
 
   <section class="panel" id="bkPanel">
     <div class="panel-head"><h2>備份與還原</h2></div>
     <div class="panel-body">
-      <p style="margin:0 0 12px;color:#8A766C;font-size:.92rem;line-height:1.6;text-align:left">資料只存在這支手機的這個瀏覽器，換手機或換瀏覽器前，記得到「預算規劃」備份全部資料。</p>
-      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#566F62;color:#fff;font-weight:600;text-decoration:none">前往預算規劃備份全部資料 ›</a>
+      <p style="margin:0 0 12px;color:#8A766C;font-size:.92rem;line-height:1.6;text-align:left">資料只存在這支手機的這個瀏覽器，換手機或換瀏覽器前，記得到「收入分配」備份全部資料。</p>
+      <a class="go-all-bk" href="預算規劃.html#bkPanel" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:#566F62;color:#fff;font-weight:600;text-decoration:none">前往收入分配備份全部資料 ›</a>
       <p class="last-bk" id="lastBk"></p>
       <script>(function () { var t = null; try { t = localStorage.getItem('last-backup-v1'); } catch (e) {} var p = document.getElementById('lastBk'); if (!p) return;
     if (t && /^\d{4}-\d{2}-\d{2}$/.test(t)) { var a = t.split('-'), y = new Date().getFullYear(); p.textContent = '上次備份：' + (Number(a[0]) !== y ? a[0] + '/' : '') + Number(a[1]) + '/' + Number(a[2]); } else p.textContent = '還沒備份過'; })();</script>
@@ -496,7 +496,7 @@
     </div>
   </section>
 
-  <p class="credit">© 2026 鯊鯊說心事｜IG：鯊鯊說心事</p>
+  <p class="credit">© 2026 鯊鯊說心事｜<a class="ig-link" href="https://www.instagram.com/bu.bu_0916/" target="_blank" rel="noopener" style="color:#566F62;font-weight:700;text-decoration:underline;text-underline-offset:3px">IG：鯊鯊說心事</a></p>
 </main>
 
 <dialog id="expDlg" aria-labelledby="expTitle">
@@ -595,7 +595,7 @@
     try { localStorage.setItem(KEY, JSON.stringify(data)); saveFailed = false; } catch (e) { saveFailed = true; }
     $('saveNote').hidden = !saveFailed;
   }
-  function readPlan(m) {                              // 預算規劃（同一個瀏覽器）的收入與「花費」目標；讀不到回傳 null
+  function readPlan(m) {                              // 收入分配（同一個瀏覽器）的收入與「花費」目標；讀不到回傳 null
     try {
       var raw = localStorage.getItem(PLAN_KEY); if (!raw) return { income: 0, v: null };
       var d = JSON.parse(raw), sl = (d && d.slots) || {}, b = 0, best = null;
@@ -607,7 +607,7 @@
       return { income: b, v: v > 0 ? Math.round(v) : null, mode: pl.mode };
     } catch (e) { return { income: 0, v: null }; }
   }
-  function writePlan(v, income) {                     // 這裡改的花費預算，同步成預算規劃的「花費」目標（自訂）
+  function writePlan(v, income) {                     // 這裡改的花費預算，同步成收入分配的「花費」目標（自訂）
     try {
       var raw = localStorage.getItem(PLAN_KEY), d = raw ? JSON.parse(raw) : null;
       if (!d || typeof d !== 'object') d = { version: 2, items: [] };
@@ -628,7 +628,7 @@
   function budW(v) { var c = (v.match(/,/g) || []).length; return (Math.max(1, v.length - c * 0.5) + 0.5) + 'ch'; }
   var DS_KEY = 'daily-spend-v1';                       // 生活預算的資料：非本月的預算存在這裡，兩頁共用
   function dsRead() { try { var d = JSON.parse(localStorage.getItem(DS_KEY)); if (d && typeof d === 'object' && d.extras && typeof d.extras === 'object') { if (!d.budget || typeof d.budget !== 'object') d.budget = {}; return d; } } catch (e) {} return { version: 1, extras: {}, budget: {} }; }
-  function budgetOf(m) {                              // 和生活預算同一套：本月跟預算規劃，其他月份各自填
+  function budgetOf(m) {                              // 和生活預算同一套：本月跟收入分配，其他月份各自填
     var bd = dsRead().budget;
     if (m !== todayISO().slice(0, 7)) return { v: bd[m] != null ? bd[m] : 0 };
     var pp = readPlan(m);
@@ -658,7 +658,7 @@
     var list = monthEntries(), total = 0, today = todayISO(), todaySum = 0, byCat = {};
     list.forEach(function (e) { total += e.a; byCat[e.c] = (byCat[e.c] || 0) + e.a; if (e.d === today) todaySum += e.a; });
     var B = budgetOf(month), drv = 0; data.sel.forEach(function (c) { drv += planned(c); });
-    var none = !data.sel.length, derived = none || drv > 0, bud = derived ? drv : B.v, left = bud - total;           // 有勾選項目的生活預算規劃時，預算＝勾選項目加總
+    var none = !data.sel.length, derived = none || drv > 0, bud = derived ? drv : B.v, left = bud - total;           // 有勾選項目的生活收入分配時，預算＝勾選項目加總
     
     if (document.activeElement !== $('budIn') || derived) $('budIn').value = bud ? bud.toLocaleString('en-US') : (derived ? '0' : '');
     $('budIn').style.width = budW($('budIn').value);
@@ -669,16 +669,16 @@
     $('planLeft').parentNode.classList.toggle('over', over); $('planBar').parentNode.classList.toggle('over', over);
     $('planBar').style.width = (bud > 0 ? Math.min(100, total * 100 / bud) : 0) + '%';
     var isCur = month === today.slice(0, 7), dn = daysIn(month), passed = isCur ? Number(today.slice(8)) : (month < today.slice(0, 7) ? dn : 0);
-    $('planNote').textContent = none ? '目前沒有勾選任何項目，所以預算和花費都是 0。' : bud > 0 ? (over ? '本月已超出預算 ' + money(-left) + '。' : '已用掉 ' + Math.round(total * 100 / bud) + '%。') + (derived ? '預算是勾選項目在本月預算的規劃加總，勾選不同項目會跟著變。' : '勾選的項目在本月預算還沒有規劃金額，這裡可以自己填。') : '填入本月花費預算，就能看到每天還可以花多少。';
+    $('planNote').textContent = none ? '目前沒有勾選任何項目，所以預算和花費都是 0。' : bud > 0 ? (over ? '本月已超出預算 ' + money(-left) + '。' : '已用掉 ' + Math.round(total * 100 / bud) + '%。') + (derived ? '預算是勾選項目在支出預算的規劃加總，勾選不同項目會跟著變。' : '勾選的項目在支出預算還沒有規劃金額，這裡可以自己填。') : '填入本月花費預算，就能看到每天還可以花多少。';
     (function () {                                   // 三個框下面的一行：本月預算・已花・還剩（預算一律到生活預算填）
       var ln = $('msLine'); ln.textContent = '';
-      if (none) { ln.textContent = '還沒有勾選要加入的花費，下面勾選後就會開始計算。'; }
+      if (none) { ln.textContent = '還沒有勾選月曆顯示的花費類別，下面勾選後就會開始計算。'; }
       else if (bud > 0) {
         ln.appendChild(document.createTextNode('本月預算 ' + money(bud) + '・已花 ' + money(total) + '・'));
         ln.appendChild(el('span', over ? 'ms-over' : '', over ? '超出 ' + money(-left) : '還剩 ' + money(left)));
       } else {
         ln.appendChild(document.createTextNode('還沒有本月預算，'));
-        var a = el('a', '', '到本月預算填寫 ›'); a.href = '生活預算.html'; ln.appendChild(a);
+        var a = el('a', '', '到支出預算填寫 ›'); a.href = '生活預算.html'; ln.appendChild(a);
       }
       $('msBarWrap').hidden = !(bud > 0); $('msBarWrap').classList.toggle('over', over);
       $('msBar').style.width = (bud > 0 ? Math.min(100, total * 100 / bud) : 0) + '%';
@@ -762,7 +762,7 @@
     var d = sel, a = Number(dig($('nAmt').value)) || 0, err = $('addErr');
     if (!isDate(d)) { err.textContent = '請選擇日期。'; return; }
     if (a <= 0) { err.textContent = '請輸入金額。'; return; }
-    if (data.entries.length >= MAX) { err.textContent = '記錄已達上限，請先到「預算規劃」頁備份全部資料，再刪除舊資料。'; return; }
+    if (data.entries.length >= MAX) { err.textContent = '記錄已達上限，請先到「收入分配」頁備份全部資料，再刪除舊資料。'; return; }
     err.textContent = '';
     if (data.sel.indexOf($('nCat').value) < 0) data.sel = CATS.filter(function (x) { return data.sel.indexOf(x) >= 0 || x === $('nCat').value; });
     data.entries.push({ id: 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), d: d, c: $('nCat').value, n: $('nNote').value.trim().slice(0, 20), a: a });
