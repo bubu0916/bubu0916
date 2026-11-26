@@ -373,6 +373,7 @@
   .ms-over { color: var(--warn); font-weight: 700; }
   .ms-bar { margin-top: 8px !important; }
   .ms-bar[hidden] { display: none; }
+  .picks-note { margin: 0 0 10px; color: #8A766C; font-size: .85rem; }
   /* ===== 新配色（灰綠＋奶油白＋暖咖啡＋奶茶點綴）===== */
   .btn, .btn-primary { color: #FFF9F2; }
   .btn.ghost, .btn-secondary, .btn-small { background: #FFFDF8; border-color: #D5E0D9; color: #566F62; }
@@ -395,6 +396,10 @@
   #listBody .ent .tag::before { content: "●"; color: #566F62; margin-right: 4px; font-size: .7em; vertical-align: 2px; }
   #listBody .ent .btn.small { border: 0 !important; background: transparent !important; padding: 4px 6px !important; min-height: 32px; font-size: .85rem; text-decoration: underline; text-underline-offset: 3px; }
   #listBody .ent .ex-del { background: transparent !important; }
+  .picks { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 6px !important; }
+  .pick { flex-direction: column !important; justify-content: center !important; align-items: center; gap: 4px !important; padding: 8px 2px !important; text-align: center !important; }
+  .pick span { align-items: center !important; font-size: .85rem !important; white-space: nowrap; }
+  .picks-note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>
 </head>
 <body>
@@ -438,7 +443,7 @@
 
   <section class="panel" id="p_plan">
     <div class="panel-head">
-      <button type="button" class="collapse-btn" data-target="p_plan" aria-expanded="true"><h2>要算進來的分類</h2><span class="tog">收起</span></button>
+      <button type="button" class="collapse-btn" data-target="p_plan" aria-expanded="true"><h2>要加入的花費</h2><span class="tog">收起</span></button>
     </div>
     <div class="panel-body">
       <div class="plan-grid">
@@ -447,6 +452,7 @@
         <div class="plan-box"><div class="label" id="planLeftLbl">還剩</div><strong id="planLeft">$0</strong></div>
       </div>
       <div class="plan-bar"><i id="planBar"></i></div>
+      <p class="picks-note">勾選的花費，會加入下方月曆。</p>
       <div class="picks" id="picks" role="group" aria-label="計入項目（本月預算的大標題）"></div>
       <div class="cat-spend" id="catSpend" hidden><div class="cs-title">超出預算</div><div id="catSpendList"></div></div>
       <p class="note-s" id="planNote">填入本月花費預算，就能看到每天還可以花多少。</p>
@@ -460,7 +466,7 @@
     <div class="panel-body">
       <div class="cal-head" aria-hidden="true"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
       <div class="cal-grid" id="calGrid"></div>
-      <p class="cal-tip">點一天，上面的記帳區就會換成那一天。日曆只算「要算進來的分類」裡勾選的項目。</p>
+      <p class="cal-tip">點一天，上面的記帳區就會換成那一天。日曆只算「要加入的花費」裡勾選的項目。</p>
     </div>
   </section>
 
@@ -652,7 +658,7 @@
     $('planNote').textContent = none ? '目前沒有勾選任何項目，所以預算和花費都是 0。' : bud > 0 ? (over ? '本月已超出預算 ' + money(-left) + '。' : '已用掉 ' + Math.round(total * 100 / bud) + '%。') + (derived ? '預算是勾選項目在本月預算的規劃加總，勾選不同項目會跟著變。' : '勾選的項目在本月預算還沒有規劃金額，這裡可以自己填。') : '填入本月花費預算，就能看到每天還可以花多少。';
     (function () {                                   // 三個框下面的一行：本月預算・已花・還剩（預算一律到生活預算填）
       var ln = $('msLine'); ln.textContent = '';
-      if (none) { ln.textContent = '還沒有勾選要算進來的分類，下面勾選後就會開始計算。'; }
+      if (none) { ln.textContent = '還沒有勾選要加入的花費，下面勾選後就會開始計算。'; }
       else if (bud > 0) {
         ln.appendChild(document.createTextNode('本月預算 ' + money(bud) + '・已花 ' + money(total) + '・'));
         ln.appendChild(el('span', over ? 'ms-over' : '', over ? '超出 ' + money(-left) : '還剩 ' + money(left)));
