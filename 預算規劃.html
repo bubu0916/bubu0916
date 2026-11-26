@@ -760,10 +760,10 @@
       var box = $('bk' + j); box.style.setProperty('--c', cols[j]);
       var goal = custom ? parts[j] : (sum ? b * parts[j] / sum : 0);
       var share = custom ? (b > 0 ? Math.round(parts[j] * 100 / b) : 0) : (sum ? Math.round(parts[j] * 100 / sum) : 0);
-      var nm = box.querySelector('.bk-name'); nm.textContent = PLAN_NAMES[j] + ' '; nm.appendChild(el('small', '', '占 ' + share + '%'));
+      var nm = box.querySelector('.bk-name'); nm.textContent = PLAN_NAMES[j];
       var val = box.querySelector('.bk-val'); val.textContent = ''; val.textContent = b > 0 || custom ? money(goal) : '$0';
       var ed = box.querySelector('.bk-edit'), ai = ed.querySelector('input'); ed.hidden = !custom; val.hidden = custom;
-      if (custom) { if (document.activeElement !== ai) ai.value = parts[j] ? parts[j].toLocaleString('en-US') : ''; ed.querySelector('small').textContent = '占總收入 ' + share + '%' + (b > 0 && j === autoIdx() ? '・自動計算' : ''); }
+      if (custom) { if (document.activeElement !== ai) ai.value = parts[j] ? parts[j].toLocaleString('en-US') : ''; ed.querySelector('small').textContent = b > 0 && j === autoIdx() ? '自動計算' : ''; }
     }
   }
   function renderPlans(b) {
