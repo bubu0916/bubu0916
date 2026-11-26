@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="claude:viewport-fit-sides" content="cover">
-<title>貸款繳納進度</title>
+<title>貸款進度</title>
 <!-- 密碼（嚇阻用）：還沒在這個瀏覽器輸入過密碼，就帶回首頁的密碼頁 -->
 <style id="gateStyle">html.gate-locked body{visibility:hidden}</style>
 <script>
@@ -321,15 +321,27 @@
   .sitenav a { border-color: #D5E0D9; }
   .sitenav a[aria-current="page"] { color: #FFF9F2; }
   input, select, textarea { background: #FFFDF8; }
+  @media (max-width: 640px) {
+    .stats { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 6px !important; }
+    .stats > .stat { grid-column: auto !important; text-align: center; padding: 10px 4px; }
+    .stats .stat .label { font-size: .75rem; }
+    .stats .stat .value { font-size: clamp(.95rem, 4.2vw, 1.2rem) !important; white-space: nowrap; }
+  }
+  @media (max-width: 640px) { .add-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; gap: 10px; } .add-form input[type=month] { padding-left: 8px; padding-right: 8px; font-size: .95rem; } }
+  @media (max-width: 400px) { .add-form input[type=month] { font-size: .85rem; padding-left: 6px; padding-right: 4px; } }
+  .ym { display: flex; gap: 6px; }
+  .ym select { flex: 1 1 0; min-width: 0; padding-left: 8px; padding-right: 2px; }
+  .ym select:first-child { flex-grow: 1.25; }
+  .add-form .field label { min-height: 1.6em; }
 </style>
 </head>
 <body>
 <header class="hero"><div class="hero-in">
-  <h1>🏦 貸款繳納進度</h1>
+  <h1>🏦 貸款進度</h1>
   <p>每繳一期，蓋一個圈圈，一步步把貸款還清🌿</p>
 </div></header>
 <noscript><p style="margin:0;padding:12px 16px;background:#FFF4E5;color:#8a5a00;text-align:center;font-size:.95rem;line-height:1.6">這個預覽沒有執行網頁程式，所以日期、按鈕和資料都無法使用。請改用 Safari 或 Chrome 開啟檔案，或使用網路預覽連結。</p></noscript>
-<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">預算規劃</a><a href="生活預算.html">生活預算</a><a href="日常花費.html">日常花費</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html" aria-current="page">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
+<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">預算規劃</a><a href="生活預算.html">生活預算</a><a href="日常花費.html">每日記帳</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html" aria-current="page">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
 
 <main class="wrap">
   <p class="err" id="saveNote" role="alert" hidden>這次未能自動儲存，請到「預算規劃」頁按「備份全部資料」留存。</p>
@@ -340,8 +352,8 @@
       <div class="add-form">
         <div class="field"><label for="nName">貸款名稱</label><input id="nName" type="text" maxlength="20" placeholder="例如 房貸"></div>
         <div class="field"><label for="nPay">每月金額</label><input id="nPay" type="text" inputmode="numeric" placeholder="0"></div>
-        <div class="field"><label for="nStart">開始月份</label><input id="nStart" type="month"></div>
-        <div class="field"><label for="nCount">先建幾個圈圈</label><input id="nCount" type="number" min="1" max="600" placeholder="1"></div>
+        <div class="field"><label for="nStartM">開始月份</label><div class="ym"><select id="nStartY" aria-label="開始年份"></select><select id="nStartM" aria-label="開始月份"></select></div><input id="nStart" type="hidden"></div>
+        <div class="field"><label for="nCount">期數</label><input id="nCount" type="number" min="1" max="600" placeholder="1"></div>
         <button type="button" class="btn" id="addLoan">+ 新增貸款</button>
       </div>
       <p class="err" id="addErr" role="alert"></p>
@@ -610,7 +622,14 @@
     showUndo({ kind: 'circle', id: l.id, circle: c, text: '已移除 ' + yLabel(c.m).slice(2) + '/' + mLabel(c.m) + ' 的圈圈' });
   });
   load();
-  $('nStart').value = todayISO().slice(0, 7);
+  (function () {                                       // 開始月份：用「年」「月」兩個選單，直接顯示中文
+    var y0 = new Date().getFullYear(), ys = $('nStartY'), ms = $('nStartM');
+    for (var y = y0 + 1; y >= y0 - 30; y--) { var o = document.createElement('option'); o.value = String(y); o.textContent = String(y); ys.appendChild(o); }
+    for (var m = 1; m <= 12; m++) { var o2 = document.createElement('option'); o2.value = pad(m); o2.textContent = m + ' 月'; ms.appendChild(o2); }
+    var t = todayISO(); ys.value = t.slice(0, 4); ms.value = t.slice(5, 7);
+    function sync() { $('nStart').value = ys.value + '-' + ms.value; }
+    ys.addEventListener('change', sync); ms.addEventListener('change', sync); sync();
+  })();
   render();
 })();
 </script>

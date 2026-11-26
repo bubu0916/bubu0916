@@ -133,30 +133,31 @@
   .sitenav a { border-color: #D5E0D9; }
   .sitenav a[aria-current="page"] { color: #FFF9F2; }
   input, select, textarea { background: #FFFDF8; }
+  @media (max-width: 640px) { #p_new .form .f-per.wide { grid-column: auto; } #p_new .form input[type=date] { padding-left: 8px; padding-right: 8px; font-size: .95rem; } }
 </style>
 </head>
 <body>
 <header class="hero"><h1>🏅 存錢目標</h1><p>每存一次就蓋一個章，一步步存到目標🌿</p></header>
 <noscript><p style="margin:0;padding:12px 16px;background:#FFF4E5;color:#8a5a00;text-align:center;font-size:.95rem;line-height:1.6">這個預覽沒有執行網頁程式，所以日期、按鈕和資料都無法使用。請改用 Safari 或 Chrome 開啟檔案，或使用網路預覽連結。</p></noscript>
-<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">預算規劃</a><a href="生活預算.html">生活預算</a><a href="日常花費.html">日常花費</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html" aria-current="page">存錢目標</a></div></nav>
+<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">預算規劃</a><a href="生活預算.html">生活預算</a><a href="日常花費.html">每日記帳</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html" aria-current="page">存錢目標</a></div></nav>
 <main class="wrap">
   <p class="err" id="saveNote" hidden>無法儲存在這個瀏覽器，請到「預算規劃」頁按「備份全部資料」留存。</p>
 
   <section class="panel" id="p_new">
     <div class="panel-head"><button type="button" class="collapse-btn" id="newToggle" aria-expanded="true"><h2>新增存錢目標</h2><span class="tog">收起</span></button></div>
     <div class="panel-body">
-      <p class="label-s">快速選擇<span class="hint">　點了之後，名稱、金額、期數都可以再改</span></p>
-      <div class="presets" id="presets">
-        <button type="button" class="preset" data-k="w52"><strong>52 週</strong><small>第 N 週存 N × 10</small></button>
-        <button type="button" class="preset" data-k="m12"><strong>12 個月</strong><small>每月存 5,000</small></button>
-        <button type="button" class="preset" data-k="d365"><strong>365 天</strong><small>第 N 天存 N × 1</small></button>
-      </div>
       <p class="label-s">存法</p>
       <div class="modes" id="modes">
         <button type="button" class="mode" data-m="fix" aria-pressed="true"><strong>每期固定存</strong><small>每期存一樣多</small></button>
         <button type="button" class="mode" data-m="goal" aria-pressed="false"><strong>想存到多少</strong><small>自動算每期存多少</small></button>
         <button type="button" class="mode" data-m="inc" aria-pressed="false"><strong>每次多存點</strong><small>第 N 期存 N 倍</small></button>
         <button type="button" class="mode" data-m="free" aria-pressed="false"><strong>想存就存</strong><small>不定期，自己記</small></button>
+      </div>
+      <p class="label-s">快速選擇<span class="hint">　點了之後，名稱、金額、期數都可以再改</span></p>
+      <div class="presets" id="presets">
+        <button type="button" class="preset" data-k="w52"><strong>52 週</strong><small>N週存N×10</small></button>
+        <button type="button" class="preset" data-k="m12"><strong>12 個月</strong><small>每月存 5,000</small></button>
+        <button type="button" class="preset" data-k="d365"><strong>365 天</strong><small>N天存N×1</small></button>
       </div>
       <div class="form">
         <div class="wide"><label for="fName">名稱</label><input id="fName" type="text" maxlength="20" placeholder="例如：旅遊基金" autocomplete="off"></div>

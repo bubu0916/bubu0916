@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="claude:viewport-fit-sides" content="cover">
-<title>日常花費</title>
+<title>每日記帳</title>
 <!-- 密碼（嚇阻用）：還沒在這個瀏覽器輸入過密碼，就帶回首頁的密碼頁 -->
 <style id="gateStyle">html.gate-locked body{visibility:hidden}</style>
 <script>
@@ -345,6 +345,34 @@
   .empty { margin: 0; padding: 18px 16px; text-align: center; color: var(--muted); }
 
   .last-bk { margin: 10px 0 0; color: #8A766C; font-size: .85rem; }
+  .cal-day { border-color: transparent; background: transparent; }
+  .cal-day.sel { border-color: var(--green); }
+  .stats { margin-bottom: 14px; }
+  .picks { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .pick { flex-direction: column; justify-content: center; gap: 4px; padding: 8px 2px; min-height: 0; text-align: center; }
+  .pick input { width: 18px; height: 18px; }
+  .pick span { align-items: center; font-size: .85rem; white-space: nowrap; }
+  .pick small { font-size: .68rem; white-space: nowrap; }
+  #selSum { display: none !important; }
+  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 8px; }
+  .stats > .stat { grid-column: auto !important; text-align: center; padding: 10px 6px; }
+  .stats .stat .value { font-size: clamp(1rem, 4.6vw, 1.3rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #p_sel .panel-body { padding-bottom: 4px; }
+  #p_sel .err:empty { min-height: 0; margin: 0; }
+  #listBody { padding: 4px 16px 14px; }
+  .list-title { margin: 6px 0 8px; font-size: .95rem; font-weight: 700; color: #5B4B44; }
+  #listBody .ent { background: #F3ECE0; border: 0; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+  #listBody .ent:last-child { margin-bottom: 0; }
+  #listBody .ent .tag, #listBody .ent .ex-del { background: #FFFDF8; }
+  #listBody .empty { padding: 8px 0 4px; }
+  #p_plan .plan-grid, #p_plan .plan-bar, #planNote { display: none !important; }
+  #p_plan .picks { margin-top: 0; }
+  .month-sum { margin: -4px 0 14px; text-align: center; }
+  .ms-line { margin: 0; color: #8A766C; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .ms-line a { color: #566F62; font-weight: 700; }
+  .ms-over { color: var(--warn); font-weight: 700; }
+  .ms-bar { margin-top: 8px !important; }
+  .ms-bar[hidden] { display: none; }
   /* ===== 新配色（灰綠＋奶油白＋暖咖啡＋奶茶點綴）===== */
   .btn, .btn-primary { color: #FFF9F2; }
   .btn.ghost, .btn-secondary, .btn-small { background: #FFFDF8; border-color: #D5E0D9; color: #566F62; }
@@ -361,15 +389,21 @@
   .sitenav a { border-color: #D5E0D9; }
   .sitenav a[aria-current="page"] { color: #FFF9F2; }
   input, select, textarea { background: #FFFDF8; }
+  #listBody .ent { background: transparent !important; border-radius: 0 !important; padding: 10px 2px !important; margin: 0 !important; border-bottom: 1px solid #EADFD2 !important; }
+  #listBody .ent:last-child { border-bottom: 0 !important; }
+  #listBody .ent .tag { background: transparent !important; padding: 0 !important; color: #8A766C !important; font-weight: 600; }
+  #listBody .ent .tag::before { content: "●"; color: #566F62; margin-right: 4px; font-size: .7em; vertical-align: 2px; }
+  #listBody .ent .btn.small { border: 0 !important; background: transparent !important; padding: 4px 6px !important; min-height: 32px; font-size: .85rem; text-decoration: underline; text-underline-offset: 3px; }
+  #listBody .ent .ex-del { background: transparent !important; }
 </style>
 </head>
 <body>
 <header class="hero"><div class="hero-in">
-  <h1>🧾 日常花費</h1>
+  <h1>🧾 每日記帳</h1>
   <p>每天記一筆，月底不心慌🌿</p>
 </div></header>
 <noscript><p style="margin:0;padding:12px 16px;background:#FFF4E5;color:#8a5a00;text-align:center;font-size:.95rem;line-height:1.6">這個預覽沒有執行網頁程式，所以日期、按鈕和資料都無法使用。請改用 Safari 或 Chrome 開啟檔案，或使用網路預覽連結。</p></noscript>
-<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">預算規劃</a><a href="生活預算.html">生活預算</a><a href="日常花費.html" aria-current="page">日常花費</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
+<nav class="sitenav" aria-label="其他網頁"><div class="sitenav-in"><a href="預算規劃.html">預算規劃</a><a href="生活預算.html">生活預算</a><a href="日常花費.html" aria-current="page">每日記帳</a><a href="物品庫存與採購預算.html">物品庫存</a><a href="貸款繳納進度.html">貸款進度</a><a href="投資預算.html">投資預算</a><a href="儲蓄預算.html">儲蓄預算</a><a href="存錢目標.html">存錢目標</a></div></nav>
 
 <main class="wrap">
   <div class="monthbar">
@@ -380,9 +414,31 @@
 
   <p class="err" id="saveNote" role="alert" hidden>這次未能自動儲存，請到「預算規劃」頁按「備份全部資料」留存。</p>
 
+  <div class="stats">
+    <div class="card stat"><div class="label">今日花費</div><div class="value" id="sToday">$0</div></div>
+    <div class="card stat"><div class="label">本月日均</div><div class="value" id="sAvg">$0</div></div>
+    <div class="card stat"><div class="label" id="sCanL">每日還可花</div><div class="value" id="sCan">—</div></div>
+  </div>
+  <div class="month-sum" id="monthSum"><p class="ms-line" id="msLine"></p><div class="plan-bar ms-bar" id="msBarWrap"><i id="msBar"></i></div></div>
+
+  <section class="panel" id="p_sel">
+    <div class="panel-head"><h2 id="selTitle">選擇日期</h2><strong id="selSum"></strong></div>
+    <div class="panel-body">
+      <div class="add-form">
+        <div class="field"><label for="nCat">類別</label><select id="nCat"></select></div>
+        <div class="field"><label for="nNote">備註（選填）</label><input id="nNote" type="text" maxlength="20" placeholder="例如 牛肉麵，不填也可以"></div>
+        <div class="field"><label for="nAmt">金額</label><input id="nAmt" type="text" inputmode="numeric" autocomplete="off" placeholder="0"></div>
+        <button type="button" class="btn" id="addBtn">+ 新增花費</button>
+      </div>
+      <p class="err" id="addErr" role="alert"></p>
+      <div class="undo-bar" id="undoBar" role="status" aria-live="polite" hidden><span id="undoText">已刪除</span><button type="button" class="btn ghost small" id="undoBtn">復原</button></div>
+    </div>
+    <div id="listBody"></div>
+  </section>
+
   <section class="panel" id="p_plan">
     <div class="panel-head">
-      <button type="button" class="collapse-btn" data-target="p_plan" aria-expanded="true"><h2>花費規劃</h2><span class="tog">收起</span></button>
+      <button type="button" class="collapse-btn" data-target="p_plan" aria-expanded="true"><h2>要算進來的分類</h2><span class="tog">收起</span></button>
     </div>
     <div class="panel-body">
       <div class="plan-grid">
@@ -404,30 +460,9 @@
     <div class="panel-body">
       <div class="cal-head" aria-hidden="true"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
       <div class="cal-grid" id="calGrid"></div>
-      <p class="cal-tip">點一天，就能記錄或查看那天的花費。日曆只算「花費規劃」裡勾選的項目。</p>
+      <p class="cal-tip">點一天，上面的記帳區就會換成那一天。日曆只算「要算進來的分類」裡勾選的項目。</p>
     </div>
   </section>
-
-  <section class="panel" id="p_sel">
-    <div class="panel-head"><h2 id="selTitle">選擇日期</h2><strong id="selSum"></strong></div>
-    <div class="panel-body">
-      <div class="add-form">
-        <div class="field"><label for="nCat">類別</label><select id="nCat"></select></div>
-        <div class="field"><label for="nNote">項目</label><input id="nNote" type="text" maxlength="20" placeholder="例如 午餐"></div>
-        <div class="field"><label for="nAmt">金額</label><input id="nAmt" type="text" inputmode="numeric" autocomplete="off" placeholder="0"></div>
-        <button type="button" class="btn" id="addBtn">+ 新增花費</button>
-      </div>
-      <p class="err" id="addErr" role="alert"></p>
-      <div class="undo-bar" id="undoBar" role="status" aria-live="polite" hidden><span id="undoText">已刪除</span><button type="button" class="btn ghost small" id="undoBtn">復原</button></div>
-    </div>
-    <div id="listBody"></div>
-  </section>
-
-  <div class="stats">
-    <div class="card stat"><div class="label">今日花費</div><div class="value" id="sToday">$0</div></div>
-    <div class="card stat"><div class="label">本月日均</div><div class="value" id="sAvg">$0</div></div>
-    <div class="card stat"><div class="label" id="sCanL">每日還可花</div><div class="value" id="sCan">—</div></div>
-  </div>
 
   <section class="panel" id="bkPanel">
     <div class="panel-head"><h2>備份與還原</h2></div>
@@ -466,7 +501,7 @@
     <h3 id="editTitle">編輯花費</h3>
     <div class="field"><label for="eDate">日期</label><input id="eDate" type="date"></div>
     <div class="field"><label for="eCat">類別</label><select id="eCat"></select></div>
-    <div class="field"><label for="eNote">項目</label><input id="eNote" type="text" maxlength="20" placeholder="例如 午餐"></div>
+    <div class="field"><label for="eNote">備註（選填）</label><input id="eNote" type="text" maxlength="20" placeholder="例如 牛肉麵，不填也可以"></div>
     <div class="field"><label for="eAmt">金額</label><input id="eAmt" type="text" inputmode="numeric" autocomplete="off" placeholder="0"></div>
     <p class="err" id="editErr" role="alert"></p>
   </div>
@@ -615,6 +650,19 @@
     $('planBar').style.width = (bud > 0 ? Math.min(100, total * 100 / bud) : 0) + '%';
     var isCur = month === today.slice(0, 7), dn = daysIn(month), passed = isCur ? Number(today.slice(8)) : (month < today.slice(0, 7) ? dn : 0);
     $('planNote').textContent = none ? '目前沒有勾選任何項目，所以預算和花費都是 0。' : bud > 0 ? (over ? '本月已超出預算 ' + money(-left) + '。' : '已用掉 ' + Math.round(total * 100 / bud) + '%。') + (derived ? '預算是勾選項目在生活預算的規劃加總，勾選不同項目會跟著變。' : '勾選的項目在生活預算還沒有規劃金額，這裡可以自己填。') : '填入本月花費預算，就能看到每天還可以花多少。';
+    (function () {                                   // 三個框下面的一行：本月預算・已花・還剩（預算一律到生活預算填）
+      var ln = $('msLine'); ln.textContent = '';
+      if (none) { ln.textContent = '還沒有勾選要算進來的分類，下面勾選後就會開始計算。'; }
+      else if (bud > 0) {
+        ln.appendChild(document.createTextNode('本月預算 ' + money(bud) + '・已花 ' + money(total) + '・'));
+        ln.appendChild(el('span', over ? 'ms-over' : '', over ? '超出 ' + money(-left) : '還剩 ' + money(left)));
+      } else {
+        ln.appendChild(document.createTextNode('還沒有本月預算，'));
+        var a = el('a', '', '到生活預算填寫 ›'); a.href = '生活預算.html'; ln.appendChild(a);
+      }
+      $('msBarWrap').hidden = !(bud > 0); $('msBarWrap').classList.toggle('over', over);
+      $('msBar').style.width = (bud > 0 ? Math.min(100, total * 100 / bud) : 0) + '%';
+    })();
     $('sToday').textContent = money(todaySum);
     $('sAvg').textContent = passed > 0 ? money(total / passed) : '$0';
     if (isCur && bud > 0) { var rest = dn - passed + 1; $('sCanL').textContent = '每日還可花'; $('sCan').textContent = left > 0 ? money(left / rest) : '$0'; }
@@ -630,7 +678,7 @@
       b.setAttribute('aria-label', dayText(ds) + (t ? '，花費 ' + money(t) : '，沒有花費')); if (ds === sel) b.setAttribute('aria-pressed', 'true');
       b.appendChild(el('span', 'n', String(dd)));
       if (t) { b.appendChild(el('span', 's' + (String(t).length >= 6 ? ' sm' : ''), String(t))); b.style.background = 'rgba(86,111,98,' + (0.08 + 0.3 * t / mx).toFixed(2) + ')'; }
-      b.addEventListener('click', function () { sel = ds; render(); });
+      b.addEventListener('click', function () { sel = ds; render(); try { $('p_sel').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} });   // 點日曆的某一天：跳到上面的記帳區
       grid.appendChild(b);
     })(dd);
     var pk = $('picks'); pk.textContent = ''; var csRows = [];
@@ -643,7 +691,6 @@
       });
       var sp = el('span', '', c), pl = planned(c), used = 0;           // 這個月這一類實際花了多少（不管有沒有勾選）
       data.entries.forEach(function (x) { if (x.c === c && x.d.slice(0, 7) === month) used += x.a; });
-      if (pl > 0) sp.appendChild(el('small', '', '規劃 ' + money(pl)));
       if (pl > 0 && used > pl) {                                       // 超出預算：只有超出的類別才列出來
         var row = el('div', 'cs-row'), right = el('span', 'cs-amt');
         row.appendChild(el('span', 'cs-name', c));
@@ -659,6 +706,7 @@
     var lb = $('listBody'); lb.textContent = '';
     var dl = list.filter(function (e) { return e.d === sel; });
     if (!dl.length) lb.appendChild(el('p', 'empty', '這天還沒有花費，上面新增一筆吧。'));
+    else lb.appendChild(el('p', 'list-title', (sel === today ? '今天' : Number(sel.slice(5, 7)) + '/' + Number(sel.slice(8))) + '記了 ' + dl.length + ' 筆'));
     dl.slice().reverse().forEach(function (e) {
       var r = el('div', 'ent'); r.appendChild(el('span', 'tag', e.c)); r.appendChild(el('span', 'nm', e.n)); r.appendChild(el('span', 'am', money(e.a)));
       var del = document.createElement('button'); del.type = 'button'; del.className = 'ex-del'; del.textContent = '×'; del.setAttribute('aria-label', '刪除這筆');
@@ -670,6 +718,7 @@
   }
   CATS.forEach(function (c) { var o = document.createElement('option'); o.value = c; o.textContent = c; $('nCat').appendChild(o); });
   CATS.forEach(function (c) { var o = document.createElement('option'); o.value = c; o.textContent = c; $('eCat').appendChild(o); });
+  $('nCat').value = '生活開銷';                         // 記帳預設「生活開銷」，最常用
   var editId = null;                                  // 正在編輯的那一筆
   function openEdit(e) {
     editId = e.id; $('eDate').value = e.d; $('eCat').value = e.c; $('eAmt').value = e.a ? e.a.toLocaleString('en-US') : ''; $('eNote').value = e.n; $('editErr').textContent = '';
