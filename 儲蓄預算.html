@@ -359,6 +359,7 @@
   .pair .extra-btns .xedit[aria-pressed="true"]::before { content: "✓"; }
   /* 名稱：底線樣式 */
   @media (max-width: 899px) { .pair .extra-row .ex-name:not(:placeholder-shown):not(:focus) { background: transparent !important; border-radius: 0 !important; border-bottom: 1.5px solid #CDA477 !important; text-align: center !important; padding: 0 !important; min-height: 22px !important; } }
+  .pair .extra-btns.at-bottom { padding: 2px 8px 8px; }
 </style>
 </head>
 <body>
@@ -403,20 +404,23 @@
       <div class="pair">
         <div class="card merged-card" data-g="sav1">
           <div class="src-head"><span class="label">定存與活存</span></div>
-          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd" title="新增欄位">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false" title="編輯欄位">編輯欄位</button></div></div>
+          <div class="extra-wrap"><div class="xbox"></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <div class="extra-btns at-bottom"><button type="button" class="btn ghost small xadd" title="新增欄位">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false" title="編輯欄位">編輯欄位</button></div>
           <p class="grp-note">每個月固定存下的錢，例如定存、零存整付、活儲帳戶。</p>
         </div>
         <div class="card merged-card" data-g="sav2">
           <div class="src-head"><span class="label">緊急預備金</span></div>
-          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd" title="新增欄位">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false" title="編輯欄位">編輯欄位</button></div></div>
+          <div class="extra-wrap"><div class="xbox"></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <div class="extra-btns at-bottom"><button type="button" class="btn ghost small xadd" title="新增欄位">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false" title="編輯欄位">編輯欄位</button></div>
           <p class="grp-note">留給突發狀況的錢，建議備好 3 到 6 個月的生活費。</p>
         </div>
         <div class="card merged-card" data-g="sav3">
           <div class="src-head"><span class="label">存錢目標</span></div>
-          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd" title="新增欄位">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false" title="編輯欄位">編輯欄位</button></div></div>
+          <div class="extra-wrap"><div class="xbox"></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <div class="extra-btns at-bottom"><button type="button" class="btn ghost small xadd" title="新增欄位">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false" title="編輯欄位">編輯欄位</button></div>
           <p class="grp-note">為特定目標存的錢，例如旅遊、買車、頭期款、結婚基金。</p>
         </div>
       </div>

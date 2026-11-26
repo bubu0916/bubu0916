@@ -359,6 +359,7 @@
   .pair .extra-btns .xedit[aria-pressed="true"]::before { content: "✓"; }
   /* 名稱：底線樣式 */
   @media (max-width: 899px) { .pair .extra-row .ex-name:not(:placeholder-shown):not(:focus) { background: transparent !important; border-radius: 0 !important; border-bottom: 1.5px solid #CDA477 !important; text-align: center !important; padding: 0 !important; min-height: 22px !important; } }
+  .pair .extra-btns.at-bottom { padding: 2px 8px 8px; }
 </style>
 </head>
 <body>
@@ -402,20 +403,23 @@
       <div class="pair">
         <div class="card merged-card" data-g="inv1">
           <div class="src-head"><span class="label">定期投資</span></div>
-          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd" title="新增欄位">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false" title="編輯欄位">編輯欄位</button></div></div>
+          <div class="extra-wrap"><div class="xbox"></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <div class="extra-btns at-bottom"><button type="button" class="btn ghost small xadd" title="新增欄位">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false" title="編輯欄位">編輯欄位</button></div>
           <p class="grp-note">每個月固定投入的錢，例如 ETF、基金定期定額、股票。</p>
         </div>
         <div class="card merged-card" data-g="inv2">
           <div class="src-head"><span class="label">單筆投資</span></div>
-          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd" title="新增欄位">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false" title="編輯欄位">編輯欄位</button></div></div>
+          <div class="extra-wrap"><div class="xbox"></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <div class="extra-btns at-bottom"><button type="button" class="btn ghost small xadd" title="新增欄位">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false" title="編輯欄位">編輯欄位</button></div>
           <p class="grp-note">一次投入的錢，例如股票、黃金、外幣。</p>
         </div>
         <div class="card merged-card" data-g="inv3">
           <div class="src-head"><span class="label">自我投資</span></div>
-          <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd" title="新增欄位">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false" title="編輯欄位">編輯欄位</button></div></div>
+          <div class="extra-wrap"><div class="xbox"></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
+          <div class="extra-btns at-bottom"><button type="button" class="btn ghost small xadd" title="新增欄位">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false" title="編輯欄位">編輯欄位</button></div>
           <p class="grp-note">花在學習與成長的錢，例如課程、書籍、證照、健身。</p>
         </div>
       </div>
