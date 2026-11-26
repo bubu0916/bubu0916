@@ -363,6 +363,11 @@
   /* 名稱：置中小標籤（只留總結線） */
   @media (max-width: 899px) { .pair .extra-row .ex-name:not(:placeholder-shown):not(:focus) { border-bottom-color: transparent !important; background: #F3ECE0 !important; border-radius: 999px !important; width: auto !important; flex: 0 1 auto !important; max-width: 85% !important; margin: 0 auto !important; padding: 0 12px !important; } .pair .extra-row { justify-content: center !important; } }
   .pair .src-head .label { display: block !important; width: 100%; text-align: center !important; }
+  /* 很大的金額：縮小字，不被切掉 */
+  @media (max-width: 899px) {
+    .pair .extra-row .ex-amt { font-size: .78rem !important; }
+    .pair .rows-total strong { font-size: clamp(.82rem, 3.6vw, 1.05rem) !important; overflow-wrap: anywhere; }
+  }
 </style>
 </head>
 <body>

@@ -410,6 +410,10 @@
   #listBody .ent .btn.small { width: 30px !important; height: 30px !important; min-height: 30px !important; padding: 0 !important; border-radius: 50% !important; border: 1px solid #D5E0D9 !important; background: #FFFDF8 !important; font-size: 0 !important; text-decoration: none !important; flex: none; }
   #listBody .ent .btn.small::before { content: "✎"; font-size: .9rem; color: #566F62; }
   #listBody .ent .ex-del { width: 30px !important; height: 30px !important; border: 1px solid #D5E0D9 !important; background: #FFFDF8 !important; color: #8A766C; font-size: 1rem; line-height: 1; }
+  /* 很長的備註：換到下一行，不擠成直排 */
+  #listBody .ent { flex-wrap: wrap; row-gap: 2px; }
+  #listBody .ent .nm { flex: 1 1 5em; min-width: 5em; }
+  #listBody .ent .am { white-space: nowrap; }
 </style>
 </head>
 <body>
