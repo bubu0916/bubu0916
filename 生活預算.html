@@ -318,6 +318,9 @@
     .plan-grid .plan-box strong, .plan-grid .bud-val { font-size: clamp(.9rem, 4.2vw, 1.15rem) !important; white-space: nowrap; }
     .plan-grid .plan-box strong.unset { font-size: .8rem !important; }
   }
+  .big-total { flex-direction: row !important; justify-content: space-between; align-items: baseline; padding: 8px 16px !important; margin-top: 8px !important; text-align: left !important; }
+  .big-total .label { font-size: .9rem !important; }
+  .big-total .value { font-size: 1.15rem !important; }
 </style>
 </head>
 <body>
@@ -364,19 +367,19 @@
           <div class="src-head"><span class="label">房屋貸款</span></div>
           <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
-          <p class="grp-note">每月要繳的房貸本息，包含房貸利息與本金。</p>
+          <p class="grp-note">房貸本金＋利息</p>
         </div>
         <div class="card merged-card" data-g="loan2">
           <div class="src-head"><span class="label">車輛貸款</span></div>
           <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
-          <p class="grp-note">每月要繳的車貸或機車貸款。</p>
+          <p class="grp-note">汽車、機車貸款</p>
         </div>
         <div class="card merged-card" data-g="loan3">
           <div class="src-head"><span class="label">信貸卡費</span></div>
           <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
-          <p class="grp-note">每月要還的信用貸款、學貸、信用卡分期與卡費。</p>
+          <p class="grp-note">例如：信貸、卡費</p>
         </div>
       </div>
       <div class="card total-card big-total"><div class="label">總貸款</div><div class="value" id="t_loan">$0</div></div>
@@ -393,19 +396,19 @@
           <div class="src-head"><span class="label">生活必需</span></div>
           <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
-          <p class="grp-note">每天都會用到的錢，例如餐飲、買菜。</p>
+          <p class="grp-note">例如：餐飲、買菜</p>
         </div>
         <div class="card merged-card" data-g="life2">
           <div class="src-head"><span class="label">交通通訊</span></div>
           <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
-          <p class="grp-note">上下班與聯絡用的錢，例如油資、捷運、手機費。</p>
+          <p class="grp-note">例如：油錢、手機費</p>
         </div>
         <div class="card merged-card" data-g="life3">
           <div class="src-head"><span class="label">健康保養</span></div>
           <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
-          <p class="grp-note">維持身體狀況的錢，例如看診、保健食品、剪髮。</p>
+          <p class="grp-note">例如：看診、剪髮</p>
         </div>
       </div>
       <div class="card total-card big-total"><div class="label">總生活開銷</div><div class="value" id="t_life">$0</div></div>
@@ -423,19 +426,19 @@
           <div class="src-head"><span class="label">居住</span></div>
           <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
-          <p class="grp-note">住的地方的錢，例如房租、水電瓦斯、管理費。</p>
+          <p class="grp-note">例如：房租、水電</p>
         </div>
         <div class="card merged-card" data-g="fam2">
           <div class="src-head"><span class="label">家人照顧</span></div>
           <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
-          <p class="grp-note">家人的錢，例如孩子學費、安親班、孝親費。</p>
+          <p class="grp-note">例如：學費、孝親費</p>
         </div>
         <div class="card merged-card" data-g="fam3">
           <div class="src-head"><span class="label">家用雜項</span></div>
           <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
-          <p class="grp-note">家裡的雜項，例如日用品、家電維修、寵物、清潔用品。</p>
+          <p class="grp-note">例如：日用品、寵物</p>
         </div>
       </div>
       <div class="card total-card big-total"><div class="label">總家庭開銷</div><div class="value" id="t_fam">$0</div></div>
@@ -452,19 +455,19 @@
           <div class="src-head"><span class="label">吃喝玩樂</span></div>
           <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
-          <p class="grp-note">與朋友相聚的錢，例如聚餐、咖啡、電影、唱歌。</p>
+          <p class="grp-note">例如：聚餐、電影</p>
         </div>
         <div class="card merged-card" data-g="lei2">
           <div class="src-head"><span class="label">旅遊</span></div>
           <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
-          <p class="grp-note">出遊的錢，例如機票、住宿、門票、伴手禮。</p>
+          <p class="grp-note">例如：機票、住宿</p>
         </div>
         <div class="card merged-card" data-g="lei3">
           <div class="src-head"><span class="label">訂閱娛樂</span></div>
           <div class="extra-wrap"><div class="xbox"></div><div class="extra-btns"><button type="button" class="btn ghost small xadd">+ 新增欄位</button><button type="button" class="btn ghost small xedit" aria-pressed="false">編輯欄位</button></div></div>
           <div class="rows-total"><span>合計</span><strong class="xsum">$0</strong></div>
-          <p class="grp-note">每月自動扣款的娛樂，例如影音、音樂、遊戲。</p>
+          <p class="grp-note">例如：影音訂閱</p>
         </div>
       </div>
       <div class="card total-card big-total"><div class="label">總休閒娛樂</div><div class="value" id="t_lei">$0</div></div>

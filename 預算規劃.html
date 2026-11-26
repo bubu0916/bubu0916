@@ -322,6 +322,18 @@
     #planPanel .plan .pct { display: none; }
     #planPanel .plan { min-height: 44px; }
   }
+  @media (max-width: 640px) {
+    .buckets { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 6px !important; }
+    .bucket { padding: 10px 6px; text-align: center; }
+    .bucket .bk-name { justify-content: center; flex-wrap: wrap; gap: 2px 6px; font-size: .9rem; }
+    .bucket .bk-name small { flex-basis: 100%; font-size: .72rem; font-weight: 400; color: #8A766C; }
+    .bucket .bk-val { font-size: clamp(.9rem, 4.2vw, 1.1rem); white-space: nowrap; margin-top: 2px; }
+    .bucket .bk-val .bk-goal { display: block; font-size: .7rem; font-weight: 400; }
+    .bucket .bk-edit { justify-content: center; gap: 2px; }
+    .bucket .bk-edit span { font-size: .75rem; }
+    .bucket .bk-edit input { width: 100%; min-width: 0; font-size: .95rem; padding: 4px 6px; text-align: center; }
+    .bucket .bk-edit small { flex-basis: 100%; font-size: .68rem; line-height: 1.3; }
+  }
 </style>
 </head>
 <body>
@@ -749,7 +761,7 @@
       var goal = custom ? parts[j] : (sum ? b * parts[j] / sum : 0);
       var share = custom ? (b > 0 ? Math.round(parts[j] * 100 / b) : 0) : (sum ? Math.round(parts[j] * 100 / sum) : 0);
       var nm = box.querySelector('.bk-name'); nm.textContent = PLAN_NAMES[j] + ' '; nm.appendChild(el('small', '', '占 ' + share + '%'));
-      var val = box.querySelector('.bk-val'); val.textContent = b > 0 || custom ? '目標 ' + money(goal) : '$0';
+      var val = box.querySelector('.bk-val'); val.textContent = ''; if (b > 0 || custom) { val.appendChild(el('small', 'bk-goal', '目標 ')); val.appendChild(document.createTextNode(money(goal))); } else val.textContent = '$0';
       var ed = box.querySelector('.bk-edit'), ai = ed.querySelector('input'); ed.hidden = !custom; val.hidden = custom;
       if (custom) { if (document.activeElement !== ai) ai.value = parts[j] ? parts[j].toLocaleString('en-US') : ''; ed.querySelector('small').textContent = '占總收入 ' + share + '%' + (b > 0 && j === autoIdx() ? '・自動計算' : ''); }
     }
